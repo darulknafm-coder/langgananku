@@ -54,5 +54,5 @@ App Store: 4+
 langgananku.app@gmail.com
 
 == URL
-Kebijakan privasi : https://NAMA-GITHUB-ANDA.github.io/langgananku/privacy.html
-Dukungan/Support  : https://NAMA-GITHUB-ANDA.github.io/langgananku/
+Kebijakan privasi : https://darulknafm-coder.github.io/langgananku/privacy.html
+Dukungan/Support  : https://darulknafm-coder.github.io/langgananku/
