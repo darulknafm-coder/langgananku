@@ -50,6 +50,9 @@ Play (kuesioner IARC): tidak ada kekerasan, seksual, judi, atau konten pengguna 
 Target audiens (Play): 18 tahun ke atas
 App Store: 4+
 
+== Email dukungan (Play & App Store)
+langgananku.app@gmail.com
+
 == URL
 Kebijakan privasi : https://NAMA-GITHUB-ANDA.github.io/langgananku/privacy.html
 Dukungan/Support  : https://NAMA-GITHUB-ANDA.github.io/langgananku/

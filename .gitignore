@@ -1,0 +1,13 @@
+# Flutter / Dart
+.dart_tool/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+pubspec.lock
+# Folder platform dibuat ulang oleh `flutter create` + tool/setup.dart
+android/
+ios/
+# KUNCI RILIS — jangan pernah di-upload
+*.jks
+*.keystore
+key.properties
