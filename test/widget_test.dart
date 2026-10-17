@@ -5,6 +5,7 @@ import 'package:langgananku/utils/format.dart';
 
 void main() {
   test('format rupiah', () {
-    expect(rupiah(54000).replaceAll(' ', ''), 'Rp54.000');
+    // Hapus spasi/non-breaking space apa pun yang mungkin dipakai locale.
+    expect(rupiah(54000).replaceAll(RegExp(r'\s'), ''), 'Rp54.000');
   });
 }
