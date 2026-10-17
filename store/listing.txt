@@ -1,0 +1,55 @@
+BAHAN LISTING TOKO — LanggananKu
+(salin-tempel ke Play Console / App Store Connect)
+
+== Play - Judul (maks 30) [30 karakter]
+LanggananKu: Pelacak Langganan
+
+== Play - Deskripsi singkat (maks 80) [78 karakter]
+Pantau semua langganan, dapat pengingat jatuh tempo, dan stop tagihan mubazir.
+
+== App Store - Nama (maks 30) [11 karakter]
+LanggananKu
+
+== App Store - Subjudul (maks 30) [28 karakter]
+Pantau & hemat tagihan rutin
+
+== App Store - Teks promosi (maks 170) [165 karakter]
+Tahu persis berapa yang Anda bayar tiap bulan untuk Netflix, Spotify, ChatGPT, IndiHome, dan lainnya. Dapat pengingat sebelum ditagih dan peringatan saat harga naik.
+
+== App Store - Kata kunci (maks 100) [96 karakter]
+langganan,tagihan,pengingat,jatuh tempo,hemat,keuangan,budget,subscription,pengeluaran,streaming
+(Jangan masukkan merek lain seperti Netflix/Spotify di kata kunci — dilarang Apple, pedoman 2.3.7)
+
+== Deskripsi lengkap — Play & App Store (maks 4000) [1484 karakter]
+LanggananKu membantu Anda mengendalikan semua tagihan berulang dalam satu tempat: streaming, musik, layanan AI, cloud, internet, hingga aplikasi produktivitas.
+
+Rata-rata kita punya lebih banyak langganan daripada yang kita ingat. Harga naik diam-diam, dan pembatalan tersembunyi di menu yang sulit dicari. LanggananKu membereskan itu.
+
+FITUR UTAMA
+• Dasbor total: lihat pengeluaran langganan per bulan dan per tahun dalam sekali lihat.
+• Deteksi otomatis: tempel email nota atau struk, dan LanggananKu mengenali layanan, nominal, serta tanggal tagihannya.
+• Pengingat jatuh tempo: notifikasi 3 hari dan 1 hari sebelum ditagih.
+• Peringatan kenaikan harga: riwayat harga tiap langganan, dan pemberitahuan saat nominal naik.
+• Batalkan sekali ketuk: langsung ke halaman pengelolaan langganan resmi layanan tersebut.
+• Katalog 45 layanan populer di Indonesia: Netflix, Vidio, Disney+ Hotstar, Spotify, YouTube Premium, ChatGPT, Canva, Google One, IndiHome, dan lainnya.
+• Simulasi hemat: hitung berapa yang bisa dihemat bila berhenti berlangganan selama beberapa bulan.
+• Saran hemat: temukan langganan yang jarang dipakai, layanan dengan fungsi sama, dan paket tahunan yang lebih murah.
+• Mode keluarga: catat langganan patungan dan lihat bagian biaya Anda.
+
+PRIVASI DI ATAS SEGALANYA
+Tanpa akun, tanpa server, tanpa iklan. Semua data dan proses deteksi berjalan di HP Anda dan tidak pernah dikirim ke mana pun.
+
+Mulai sekarang dan lihat ke mana uang langganan Anda pergi setiap bulan.
+
+== Kategori
+Play Store: Keuangan (Finance)
+App Store : Finance (utama), Productivity (sekunder)
+
+== Rating usia
+Play (kuesioner IARC): tidak ada kekerasan, seksual, judi, atau konten pengguna → hasil "3+ / Semua umur"
+Target audiens (Play): 18 tahun ke atas
+App Store: 4+
+
+== URL
+Kebijakan privasi : https://NAMA-GITHUB-ANDA.github.io/langgananku/privacy.html
+Dukungan/Support  : https://NAMA-GITHUB-ANDA.github.io/langgananku/
