@@ -70,9 +70,17 @@ jobs:
         continue-on-error: true
 
       - name: Build App Bundle (.aab untuk Play Store) dan APK
+        shell: bash
         run: |
-          flutter build appbundle --release --build-number=${{ github.run_number }} --dart-define=SMS_SCAN=$SMS_SCAN
-          flutter build apk --release --build-number=${{ github.run_number }} --dart-define=SMS_SCAN=$SMS_SCAN
+          set -o pipefail
+          report() {
+            # Tampilkan ringkasan error sebagai anotasi (terlihat di halaman ringkasan run).
+            msg=$(grep -iE "error|what went wrong|failed|exception|> " build.log | grep -v "^\s*$" | tail -40 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+            echo "::error title=Build gagal::${msg}"
+            exit 1
+          }
+          flutter build appbundle --release --build-number=${{ github.run_number }} --dart-define=SMS_SCAN=$SMS_SCAN 2>&1 | tee build.log || report
+          flutter build apk --release --build-number=${{ github.run_number }} --dart-define=SMS_SCAN=$SMS_SCAN 2>&1 | tee build.log || report
 
       - uses: actions/upload-artifact@v4
         with:
