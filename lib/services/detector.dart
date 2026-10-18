@@ -44,7 +44,8 @@ class DetectedSubscription {
   });
 
   bool get isNew => existing == null;
-  bool get priceChanged => existing != null && (existing!.amount - amount).abs() >= 1;
+  bool get priceChanged =>
+      existing != null && !existing!.isUsd && (existing!.amount - amount).abs() >= 1;
 }
 
 class Detector {

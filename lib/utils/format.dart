@@ -6,6 +6,24 @@ final NumberFormat _rp =
 /// Rp54.000
 String rupiah(num v) => _rp.format(v);
 
+final NumberFormat _usd =
+    NumberFormat.currency(locale: 'en_US', symbol: 'US\$', decimalDigits: 2);
+
+/// US$19.99 (tanpa ",00" bila bulat: US$20)
+String dolar(num v) {
+  final s = _usd.format(v);
+  return s.endsWith('.00') ? s.substring(0, s.length - 3) : s;
+}
+
+/// Format nominal sesuai mata uang ('IDR' / 'USD').
+String money(num v, String currency) => currency == 'USD' ? dolar(v) : rupiah(v);
+
+/// Baca nominal dolar: "20", "19.99", "19,99", "US$ 20".
+double? parseUsd(String s) {
+  final t = s.replaceAll(RegExp(r'[^0-9.,]'), '').replaceAll(',', '.');
+  return double.tryParse(t);
+}
+
 String tanggal(DateTime d) => DateFormat('d MMM yyyy', 'id_ID').format(d);
 
 String tanggalPendek(DateTime d) => DateFormat('d MMM', 'id_ID').format(d);

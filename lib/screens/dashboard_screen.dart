@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../data/catalog.dart';
 import '../models/subscription.dart';
 import '../services/repository.dart';
 import '../theme/app_theme.dart';
@@ -7,6 +8,7 @@ import '../utils/format.dart';
 import '../widgets/common.dart';
 import 'catalog_picker.dart';
 import 'detail_screen.dart';
+import 'edit_screen.dart';
 import 'scan_screen.dart';
 
 String _salam() {
@@ -87,7 +89,7 @@ class DashboardScreen extends StatelessWidget {
                               style: const TextStyle(
                                   fontWeight: FontWeight.w700, color: AppColors.text)),
                           const SizedBox(height: 2),
-                          Text('${rupiah(a.oldAmount)} → ${rupiah(a.newAmount)}',
+                          Text('${a.oldLabel} → ${a.newLabel}',
                               style: const TextStyle(
                                   color: Color(0xFFFFB4AB),
                                   fontSize: 13,
@@ -313,11 +315,11 @@ class _UpcomingCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5)),
           const SizedBox(height: 2),
-          Text(rupiah(s.amount),
+          Text(s.amountLabel,
               style: const TextStyle(
                   color: AppColors.muted, fontSize: 13, fontFeatures: kTabular)),
           const SizedBox(height: 8),
-          Pill.due(s.nextDue),
+          Pill.forSub(s),
         ]),
       ),
     );
@@ -374,6 +376,10 @@ class _CategoryCard extends StatelessWidget {
   }
 }
 
+const _popular = [
+  'netflix', 'spotify', 'youtube', 'chatgpt', 'googleone', 'disney', 'canva', 'indihome',
+];
+
 class _EmptyState extends StatelessWidget {
   const _EmptyState();
 
@@ -393,8 +399,29 @@ class _EmptyState extends StatelessWidget {
         const Text('Belum ada langganan',
             style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
         const SizedBox(height: 6),
-        const Text('Pindai SMS/email nota atau pilih dari katalog layanan populer.',
+        const Text('Ketuk layanan yang Anda pakai, atau pindai nota tagihan.',
             textAlign: TextAlign.center, style: TextStyle(color: AppColors.muted)),
+        const SizedBox(height: 18),
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final key in _popular)
+              if (catalogByKey(key) case final c?)
+                ActionChip(
+                  avatar: SubAvatar(name: c.name, color: c.color, size: 22),
+                  label: Text(c.name.split(' (').first),
+                  backgroundColor: AppColors.surface2,
+                  side: const BorderSide(color: AppColors.line),
+                  shape: const StadiumBorder(),
+                  labelStyle: const TextStyle(
+                      color: AppColors.text, fontWeight: FontWeight.w600, fontSize: 13),
+                  onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => EditScreen(fromCatalog: c))),
+                ),
+          ],
+        ),
         const SizedBox(height: 20),
         SizedBox(
           width: double.infinity,
@@ -421,4 +448,4 @@ class _EmptyState extends StatelessWidget {
 }
 
 /// Dipakai layar lain untuk label singkat siklus.
-String cycleText(Subscription s) => '${rupiah(s.amount)}${s.cycle.perLabel}';
+String cycleText(Subscription s) => '${s.amountLabel}${s.cycle.perLabel}';

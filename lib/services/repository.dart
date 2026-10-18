@@ -24,6 +24,7 @@ class Repo extends ChangeNotifier {
   bool remindersEnabled = true;
   int reminderHour = 9;
   bool onboarded = false;
+  double usdRate = 16500;
 
   SharedPreferences? _prefs;
 
@@ -51,10 +52,12 @@ class Repo extends ChangeNotifier {
         remindersEnabled = (s['remindersEnabled'] as bool?) ?? true;
         reminderHour = (s['reminderHour'] as int?) ?? 9;
         onboarded = (s['onboarded'] as bool?) ?? false;
+        usdRate = ((s['usdRate'] as num?) ?? 16500).toDouble();
       }
     } catch (_) {
       // Data rusak → mulai bersih, jangan bikin app crash.
     }
+    Subscription.usdRate = usdRate;
     // Data contoh untuk pratinjau/screenshot: flutter build ... --dart-define=DEMO=true
     if (const bool.fromEnvironment('DEMO') && subs.isEmpty) {
       _seedDemo();
@@ -97,11 +100,14 @@ class Repo extends ChangeNotifier {
       netflix,
       mk('spotify', 54990, 9),
       mk('chatgpt', 330000, 14),
-      mk('claude', 330000, 20, usage: Usage.rarely),
+      mk('claude', 20, 20, usage: Usage.rarely)
+        ..currency = 'USD'
+        ..history = [PricePoint(d(-90), 20)],
       mk('canva', 95000, 5, pay: 'DANA'),
       mk('googleone', 26900, 24, pay: 'Google Play'),
       mk('indihome', 300000, 11, pay: 'Transfer Bank'),
       mk('vidio', 39000, 17, pay: 'Pulsa', usage: Usage.rarely),
+      mk('youtube', 59000, 4, pay: 'Google Play')..trialEnd = d(4),
     ]);
     alerts.add(PriceAlert(
         subId: netflix.id, name: 'Netflix', oldAmount: 54000, newAmount: 65000, date: d(-30)));
@@ -117,6 +123,7 @@ class Repo extends ChangeNotifier {
           'remindersEnabled': remindersEnabled,
           'reminderHour': reminderHour,
           'onboarded': onboarded,
+          'usdRate': usdRate,
         }));
     // Jangan pernah menahan UI menunggu penjadwalan notifikasi.
     unawaited(NotificationService.reschedule(subs, enabled: remindersEnabled, hour: reminderHour)
@@ -229,15 +236,18 @@ class Repo extends ChangeNotifier {
               name: s.name,
               oldAmount: old,
               newAmount: newAmount,
+              currency: s.currency,
               date: DateTime.now()));
       NotificationService.showNow('Harga ${s.name} naik',
-          'Dari ${rupiah(old)} menjadi ${rupiah(newAmount)}. Cek apakah masih layak.');
+          'Dari ${money(old, s.currency)} menjadi ${money(newAmount, s.currency)}. Cek apakah masih layak.');
     }
   }
 
   /// Dipakai oleh hasil pindai SMS/email: perbarui harga + jatuh tempo.
   Future<void> applyDetected(Subscription s, double amount, DateTime nextDue) async {
-    if ((amount - s.amount).abs() >= 1) _recordPrice(s, amount);
+    // Nominal hasil pindai selalu Rupiah; untuk langganan USD cukup perbarui tanggal.
+    if (!s.isUsd && (amount - s.amount).abs() >= 1) _recordPrice(s, amount);
+    s.trialEnd = null; // sudah ada tagihan nyata → trial selesai
     s.nextDue = nextDue;
     s.anchorDay = nextDue.day;
     s.rollForward();
@@ -247,6 +257,22 @@ class Repo extends ChangeNotifier {
   Future<void> remove(Subscription s) async {
     subs.removeWhere((x) => x.id == s.id);
     alerts.removeWhere((a) => a.subId == s.id);
+    await _commit();
+  }
+
+  /// Kembalikan langganan yang baru dihapus (tombol "Urungkan").
+  Future<void> restore(Subscription s, List<PriceAlert> removedAlerts, int index) async {
+    if (subs.any((x) => x.id == s.id)) return;
+    subs.insert(index.clamp(0, subs.length), s);
+    alerts.addAll(removedAlerts);
+    alerts.sort((a, b) => b.date.compareTo(a.date));
+    await _commit();
+  }
+
+  Future<void> setUsdRate(double rate) async {
+    if (rate <= 0) return;
+    usdRate = rate;
+    Subscription.usdRate = rate;
     await _commit();
   }
 
@@ -273,8 +299,11 @@ class Repo extends ChangeNotifier {
 
   String exportJson() => const JsonEncoder.withIndent('  ').convert({
         'app': 'LanggananKu',
-        'version': 1,
+        'version': 2,
+        'exportedAt': DateTime.now().toIso8601String(),
+        'usdRate': usdRate,
         'subs': subs.map((s) => s.toJson()).toList(),
+        'alerts': alerts.map((a) => a.toJson()).toList(),
       });
 
   Future<int> importJson(String raw) async {
@@ -285,6 +314,17 @@ class Repo extends ChangeNotifier {
     subs
       ..clear()
       ..addAll(list);
+    final al = j['alerts'] as List?;
+    if (al != null) {
+      alerts
+        ..clear()
+        ..addAll(al.map((e) => PriceAlert.fromJson(Map<String, dynamic>.from(e as Map))));
+    }
+    final rate = (j['usdRate'] as num?)?.toDouble();
+    if (rate != null && rate > 0) {
+      usdRate = rate;
+      Subscription.usdRate = rate;
+    }
     for (final s in subs) {
       s.rollForward();
     }

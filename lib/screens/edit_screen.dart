@@ -32,6 +32,8 @@ class _EditScreenState extends State<EditScreen> {
   late bool _active;
   late int _color;
   String? _catalogKey;
+  late String _currency;
+  late bool _trial;
 
   @override
   void initState() {
@@ -39,8 +41,15 @@ class _EditScreenState extends State<EditScreen> {
     final e = widget.existing;
     final c = widget.fromCatalog;
     _name = TextEditingController(text: e?.name ?? c?.name ?? '');
+    _currency = e?.currency ?? 'IDR';
+    _trial = e?.onTrial ?? false;
+    final a = e?.amount ?? c?.monthly;
     _amount = TextEditingController(
-        text: (e?.amount ?? c?.monthly)?.toStringAsFixed(0) ?? '');
+        text: a == null
+            ? ''
+            : (_currency == 'USD' && a != a.roundToDouble())
+                ? a.toStringAsFixed(2)
+                : a.toStringAsFixed(0));
     _url = TextEditingController(text: e?.cancelUrl ?? c?.cancelUrl ?? '');
     _note = TextEditingController(text: e?.note ?? '');
     _category = e?.category ?? c?.category ?? 'Lainnya';
@@ -71,14 +80,18 @@ class _EditScreenState extends State<EditScreen> {
       initialDate: _due,
       firstDate: DateTime.now().subtract(const Duration(days: 365)),
       lastDate: DateTime.now().add(const Duration(days: 365 * 3)),
-      helpText: 'Tanggal tagihan berikutnya',
+      helpText: _trial ? 'Trial gratis berakhir' : 'Tanggal tagihan berikutnya',
     );
     if (d != null) setState(() => _due = d);
   }
 
+  double? _parseAmount(String v) =>
+      _currency == 'USD' ? parseUsd(v) : Detector.parseRupiah(v);
+
   Future<void> _save() async {
     if (!_form.currentState!.validate()) return;
-    final amount = Detector.parseRupiah(_amount.text) ?? 0;
+    final amount = _parseAmount(_amount.text) ?? 0;
+    final trialEnd = _trial ? dateOnly(_due) : null;
     final repo = Repo.instance;
     final e = widget.existing;
     if (e == null) {
@@ -97,6 +110,8 @@ class _EditScreenState extends State<EditScreen> {
         usage: _usage,
         sharedWith: _shared,
         catalogKey: _catalogKey,
+        currency: _currency,
+        trialEnd: trialEnd,
       ));
     } else {
       e
@@ -108,7 +123,15 @@ class _EditScreenState extends State<EditScreen> {
         ..note = _note.text.trim()
         ..active = _active
         ..usage = _usage
-        ..sharedWith = _shared;
+        ..sharedWith = _shared
+        ..trialEnd = trialEnd;
+      if (e.currency != _currency) {
+        // Ganti mata uang: riwayat harga lama tidak sebanding, mulai ulang.
+        e
+          ..currency = _currency
+          ..amount = amount
+          ..history = [PricePoint(DateTime.now(), amount)];
+      }
       if (dateOnly(e.nextDue) != dateOnly(_due)) {
         e.nextDue = _due;
         e.anchorDay = _due.day;
@@ -116,6 +139,13 @@ class _EditScreenState extends State<EditScreen> {
       await repo.update(e, newAmount: amount);
     }
     if (mounted) Navigator.of(context).pop();
+  }
+
+  String _usdHelper() {
+    final n = parseUsd(_amount.text);
+    final rate = Repo.instance.usdRate;
+    if (n == null || n <= 0) return 'Kurs ${rupiah(rate)}/US\$ (ubah di Setelan)';
+    return '≈ ${rupiah(n * rate)} · kurs ${rupiah(rate)}/US\$';
   }
 
   @override
@@ -144,14 +174,49 @@ class _EditScreenState extends State<EditScreen> {
               validator: (v) => (v == null || v.trim().isEmpty) ? 'Wajib diisi' : null,
             ),
             gap,
-            TextFormField(
-              controller: _amount,
-              decoration: inputDeco('Nominal per tagihan', prefix: 'Rp '),
-              keyboardType: TextInputType.number,
-              validator: (v) {
-                final n = Detector.parseRupiah(v ?? '');
-                return (n == null || n <= 0) ? 'Isi nominal yang valid' : null;
-              },
+            Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _amount,
+                  decoration: inputDeco('Nominal per tagihan',
+                      prefix: _currency == 'USD' ? 'US\$ ' : 'Rp ',
+                      helper: _currency == 'USD' ? _usdHelper() : null),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  onChanged: (_) {
+                    if (_currency == 'USD') setState(() {});
+                  },
+                  validator: (v) {
+                    final n = _parseAmount(v ?? '');
+                    return (n == null || n <= 0) ? 'Isi nominal yang valid' : null;
+                  },
+                ),
+              ),
+              const SizedBox(width: 10),
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: SegmentedButton<String>(
+                  showSelectedIcon: false,
+                  style: const ButtonStyle(visualDensity: VisualDensity.compact),
+                  segments: const [
+                    ButtonSegment(value: 'IDR', label: Text('Rp')),
+                    ButtonSegment(value: 'USD', label: Text('US\$')),
+                  ],
+                  selected: {_currency},
+                  onSelectionChanged: (v) => setState(() => _currency = v.first),
+                ),
+              ),
+            ]),
+            gap,
+            AppCard(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: SwitchListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                secondary: const Icon(Icons.hourglass_top_rounded),
+                title: const Text('Sedang masa trial gratis'),
+                subtitle: const Text('Diingatkan H-3, H-1, dan di hari terakhir trial'),
+                value: _trial,
+                onChanged: (v) => setState(() => _trial = v),
+              ),
             ),
             gap,
             const Text('Siklus tagihan'),
@@ -171,7 +236,9 @@ class _EditScreenState extends State<EditScreen> {
             InkWell(
               onTap: _pickDate,
               child: InputDecorator(
-                decoration: inputDeco('Tagihan berikutnya'),
+                decoration: inputDeco(_trial
+                    ? 'Trial gratis berakhir (tagihan pertama)'
+                    : 'Tagihan berikutnya'),
                 child: Row(children: [
                   Expanded(child: Text(tanggal(_due))),
                   const Icon(Icons.calendar_today_outlined, size: 18),

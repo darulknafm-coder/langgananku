@@ -75,8 +75,22 @@ class DetailScreen extends StatelessWidget {
       ),
     );
     if (ok == true) {
-      await Repo.instance.remove(sub);
+      final repo = Repo.instance;
+      final messenger = ScaffoldMessenger.of(context);
+      final index = repo.subs.indexWhere((x) => x.id == sub.id);
+      final removedAlerts = repo.alerts.where((a) => a.subId == sub.id).toList();
+      await repo.remove(sub);
       if (context.mounted) Navigator.of(context).pop();
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(
+          content: Text('${sub.name} dihapus.'),
+          duration: const Duration(seconds: 6),
+          action: SnackBarAction(
+            label: 'Urungkan',
+            onPressed: () => repo.restore(sub, removedAlerts, index),
+          ),
+        ));
     }
   }
 
@@ -143,7 +157,7 @@ class DetailScreen extends StatelessWidget {
                 child: Text.rich(
                   TextSpan(children: [
                     TextSpan(
-                        text: rupiah(sub.amount),
+                        text: sub.amountLabel,
                         style: const TextStyle(
                             fontSize: 34,
                             fontWeight: FontWeight.w800,
@@ -155,9 +169,14 @@ class DetailScreen extends StatelessWidget {
                   ]),
                 ),
               ),
+              if (sub.isUsd)
+                Center(
+                  child: Text('≈ ${rupiah(sub.amountIdr)} · kurs ${rupiah(Subscription.usdRate)}/US\$',
+                      style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+                ),
               const SizedBox(height: 12),
               Wrap(alignment: WrapAlignment.center, spacing: 8, runSpacing: 8, children: [
-                if (sub.active) Pill.due(sub.nextDue)
+                if (sub.active) Pill.forSub(sub)
                 else const Pill('Nonaktif', fg: AppColors.faint, bg: AppColors.surface3),
                 Pill(sub.category, fg: AppColors.text, bg: AppColors.surface3),
                 if (sub.sharedWith > 1)
@@ -168,7 +187,7 @@ class DetailScreen extends StatelessWidget {
 
               // ---------- Info ----------
               Row(children: [
-                info('Tagihan berikutnya', sub.active ? tanggal(sub.nextDue) : '—'),
+                info(sub.onTrial ? 'Trial berakhir' : 'Tagihan berikutnya', sub.active ? tanggal(sub.nextDue) : '—'),
                 const SizedBox(width: 10),
                 info('Bayar via', sub.paymentMethod),
               ]),
@@ -228,7 +247,7 @@ class DetailScreen extends StatelessWidget {
                               from: history[i + 1].amount, to: history[i].amount),
                           const SizedBox(width: 10),
                         ],
-                        Text(rupiah(history[i].amount),
+                        Text(money(history[i].amount, sub.currency),
                             style: const TextStyle(
                                 fontWeight: FontWeight.w700, fontFeatures: kTabular)),
                       ]),

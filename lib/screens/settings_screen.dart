@@ -1,8 +1,13 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../services/notification_service.dart';
 import '../services/repository.dart';
+import '../utils/format.dart';
 import '../widgets/common.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -16,6 +21,98 @@ class SettingsScreen extends StatelessWidget {
       helpText: 'Jam pengingat',
     );
     if (t != null) await repo.setReminders(hour: t.hour);
+  }
+
+  void _toast(BuildContext context, String msg) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  /// Simpan cadangan sebagai file .json (pengguna memilih lokasi, mis. Download/Drive).
+  Future<void> _exportFile(BuildContext context) async {
+    final d = DateTime.now();
+    final name = 'langgananku-cadangan-'
+        '${d.year}${d.month.toString().padLeft(2, '0')}${d.day.toString().padLeft(2, '0')}.json';
+    try {
+      final path = await FilePicker.platform.saveFile(
+        dialogTitle: 'Simpan cadangan LanggananKu',
+        fileName: name,
+        type: FileType.custom,
+        allowedExtensions: const ['json'],
+        bytes: Uint8List.fromList(utf8.encode(Repo.instance.exportJson())),
+      );
+      if (path != null) _toast(context, 'Cadangan tersimpan: $name');
+    } catch (_) {
+      await Clipboard.setData(ClipboardData(text: Repo.instance.exportJson()));
+      _toast(context, 'Tidak bisa menyimpan file. Data cadangan disalin ke clipboard.');
+    }
+  }
+
+  Future<void> _importFile(BuildContext context) async {
+    try {
+      final res = await FilePicker.platform.pickFiles(
+        dialogTitle: 'Pilih file cadangan LanggananKu',
+        type: FileType.any,
+        withData: true,
+      );
+      final bytes = res?.files.single.bytes;
+      if (bytes == null) return;
+      if (!context.mounted) return;
+      final ok = await _confirmReplace(context);
+      if (ok != true) return;
+      final n = await Repo.instance.importJson(utf8.decode(bytes));
+      _toast(context, '$n langganan dipulihkan dari file.');
+    } catch (_) {
+      _toast(context, 'File bukan cadangan LanggananKu yang valid.');
+    }
+  }
+
+  Future<bool?> _confirmReplace(BuildContext context) => showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Ganti data sekarang?'),
+          content: const Text('Langganan di HP ini akan diganti dengan isi cadangan.'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
+            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Pulihkan')),
+          ],
+        ),
+      );
+
+  Future<void> _editRate(BuildContext context) async {
+    final repo = Repo.instance;
+    final ctrl = TextEditingController(text: repo.usdRate.toStringAsFixed(0));
+    final v = await showDialog<double>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Kurs dolar (USD)'),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [
+          TextField(
+            controller: ctrl,
+            autofocus: true,
+            keyboardType: TextInputType.number,
+            decoration: inputDeco('1 US\$ =', prefix: 'Rp '),
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            'Dipakai untuk menghitung langganan yang ditagih dalam dolar '
+            '(mis. ChatGPT, Claude). Samakan dengan kurs di tagihan kartu Anda.',
+            style: TextStyle(fontSize: 13),
+          ),
+        ]),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
+          FilledButton(
+            onPressed: () => Navigator.pop(
+                ctx, double.tryParse(ctrl.text.replaceAll(RegExp(r'[^0-9]'), ''))),
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+    if (v != null && v > 0) await repo.setUsdRate(v);
   }
 
   Future<void> _import(BuildContext context) async {
@@ -107,14 +204,39 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ]),
               ),
-              const SectionTitle('Data'),
+              const SectionTitle('Mata uang'),
+              AppCard(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: ListTile(
+                  leading: const Icon(Icons.currency_exchange_rounded),
+                  title: const Text('Kurs dolar (USD)'),
+                  subtitle: const Text('Untuk langganan yang ditagih dalam dolar'),
+                  trailing: Text(rupiah(repo.usdRate),
+                      style: const TextStyle(fontWeight: FontWeight.w700)),
+                  onTap: () => _editRate(context),
+                ),
+              ),
+              const SectionTitle('Cadangan data'),
               AppCard(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Column(children: [
                   ListTile(
-                    leading: const Icon(Icons.upload_outlined),
-                    title: const Text('Ekspor (salin cadangan)'),
-                    subtitle: const Text('Salin data ke clipboard untuk dipindah ke HP lain'),
+                    leading: const Icon(Icons.save_alt_rounded),
+                    title: const Text('Simpan cadangan ke file'),
+                    subtitle: const Text('File .json — simpan di Download atau Google Drive'),
+                    onTap: () => _exportFile(context),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.restore_rounded),
+                    title: const Text('Pulihkan dari file'),
+                    subtitle: const Text('Pilih file cadangan LanggananKu'),
+                    onTap: () => _importFile(context),
+                  ),
+                  const Divider(),
+                  ListTile(
+                    leading: const Icon(Icons.copy_rounded),
+                    title: const Text('Salin cadangan (teks)'),
+                    subtitle: const Text('Alternatif: salin ke clipboard'),
                     onTap: () async {
                       await Clipboard.setData(ClipboardData(text: repo.exportJson()));
                       if (context.mounted) {
@@ -125,7 +247,7 @@ class SettingsScreen extends StatelessWidget {
                   ),
                   ListTile(
                     leading: const Icon(Icons.download_outlined),
-                    title: const Text('Impor cadangan'),
+                    title: const Text('Tempel cadangan (teks)'),
                     onTap: () => _import(context),
                   ),
                   ListTile(
@@ -144,7 +266,7 @@ class SettingsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Center(
-                child: Text('LanggananKu v1.0.0',
+                child: Text('LanggananKu v1.1.0',
                     style: TextStyle(color: cs.onSurfaceVariant)),
               ),
             ],

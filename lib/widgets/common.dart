@@ -122,6 +122,19 @@ class Pill extends StatelessWidget {
     return Pill(sisaHari(due), key: key, fg: AppColors.muted, bg: AppColors.surface3);
   }
 
+  /// Pill status untuk satu langganan: "Trial · 3 hari lagi" atau sisa hari tagihan.
+  factory Pill.forSub(Subscription s, {Key? key}) {
+    if (s.onTrial) {
+      final n = daysUntil(s.nextDue);
+      return Pill('Trial · ${sisaHari(s.nextDue).toLowerCase()}',
+          key: key,
+          icon: Icons.hourglass_top_rounded,
+          fg: n <= 3 ? AppColors.coral : AppColors.sky,
+          bg: n <= 3 ? AppColors.coralDeep : const Color(0x265AC8FA));
+    }
+    return Pill.due(s.nextDue, key: key);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -168,7 +181,7 @@ class SubTile extends StatelessWidget {
                       decoration: s.active ? null : TextDecoration.lineThrough)),
               const SizedBox(height: 5),
               Row(children: [
-                if (s.active) Pill.due(s.nextDue) else
+                if (s.active) Pill.forSub(s) else
                   const Pill('Nonaktif', fg: AppColors.faint, bg: AppColors.surface3),
                 const SizedBox(width: 8),
                 Flexible(
@@ -184,7 +197,7 @@ class SubTile extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-            Text(rupiah(s.amount),
+            Text(s.amountLabel,
                 style: const TextStyle(
                     fontSize: 15, fontWeight: FontWeight.w700, fontFeatures: kTabular)),
             const SizedBox(height: 3),

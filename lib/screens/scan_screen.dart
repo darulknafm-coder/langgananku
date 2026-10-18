@@ -172,7 +172,7 @@ class _ScanScreenState extends State<ScanScreen> {
                       title: Text(d.name, style: const TextStyle(fontWeight: FontWeight.w600)),
                       subtitle: Text(
                         d.priceChanged
-                            ? 'Harga berubah: ${rupiah(d.existing!.amount)} → ${rupiah(d.amount)}'
+                            ? 'Harga berubah: ${d.existing!.amountLabel} → ${rupiah(d.amount)}'
                             : '${rupiah(d.amount)} · ${d.cycle.label} · '
                                 'berikutnya ${tanggalPendek(d.nextDue)}'
                                 '${d.occurrences > 1 ? ' · ${d.occurrences}x tertagih' : ''}',

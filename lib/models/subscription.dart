@@ -71,6 +71,13 @@ class Subscription {
   int sharedWith; // 1 = dipakai sendiri; >1 = mode keluarga / patungan
   String? catalogKey;
   List<PricePoint> history;
+  /// 'IDR' atau 'USD'. Nominal ([amount]) disimpan dalam mata uang ini.
+  String currency;
+  /// Bila diisi: masa trial gratis berakhir di tanggal ini (tagihan pertama).
+  DateTime? trialEnd;
+
+  /// Kurs USD → Rupiah, diatur di Setelan (diisi oleh Repo).
+  static double usdRate = 16500;
 
   Subscription({
     required this.id,
@@ -89,10 +96,24 @@ class Subscription {
     this.sharedWith = 1,
     this.catalogKey,
     List<PricePoint>? history,
+    this.currency = 'IDR',
+    this.trialEnd,
   })  : anchorDay = anchorDay ?? nextDue.day,
         history = history ?? [PricePoint(DateTime.now(), amount)];
 
-  double get monthlyCost => amount * cycle.perMonth;
+  bool get isUsd => currency == 'USD';
+
+  /// Nominal per tagihan dalam Rupiah (USD dikonversi dengan kurs Setelan).
+  double get amountIdr => isUsd ? amount * usdRate : amount;
+
+  /// Label nominal asli: "Rp54.990" atau "US\$20".
+  String get amountLabel => money(amount, currency);
+
+  /// Masih dalam masa trial gratis (belum pernah ditagih).
+  bool get onTrial =>
+      trialEnd != null && !dateOnly(trialEnd!).isBefore(dateOnly(DateTime.now()));
+
+  double get monthlyCost => amountIdr * cycle.perMonth;
   double get yearlyCost => monthlyCost * 12;
   double get myMonthlyCost => monthlyCost / (sharedWith < 1 ? 1 : sharedWith);
 
@@ -123,6 +144,8 @@ class Subscription {
         'sharedWith': sharedWith,
         'catalogKey': catalogKey,
         'history': history.map((h) => h.toJson()).toList(),
+        'currency': currency,
+        'trialEnd': trialEnd?.toIso8601String(),
       };
 
   factory Subscription.fromJson(Map<String, dynamic> j) => Subscription(
@@ -146,6 +169,8 @@ class Subscription {
         history: ((j['history'] as List?) ?? [])
             .map((e) => PricePoint.fromJson(Map<String, dynamic>.from(e as Map)))
             .toList(),
+        currency: (j['currency'] as String?) ?? 'IDR',
+        trialEnd: j['trialEnd'] == null ? null : DateTime.tryParse(j['trialEnd'] as String),
       );
 }
 
@@ -155,6 +180,7 @@ class PriceAlert {
   final double oldAmount;
   final double newAmount;
   final DateTime date;
+  final String currency;
   bool seen;
 
   PriceAlert({
@@ -163,8 +189,12 @@ class PriceAlert {
     required this.oldAmount,
     required this.newAmount,
     required this.date,
+    this.currency = 'IDR',
     this.seen = false,
   });
+
+  String get oldLabel => money(oldAmount, currency);
+  String get newLabel => money(newAmount, currency);
 
   double get percent => oldAmount == 0 ? 0 : (newAmount - oldAmount) / oldAmount * 100;
 
@@ -175,6 +205,7 @@ class PriceAlert {
         'newAmount': newAmount,
         'date': date.toIso8601String(),
         'seen': seen,
+        'currency': currency,
       };
 
   factory PriceAlert.fromJson(Map<String, dynamic> j) => PriceAlert(
@@ -184,6 +215,7 @@ class PriceAlert {
         newAmount: (j['newAmount'] as num).toDouble(),
         date: DateTime.parse(j['date'] as String),
         seen: (j['seen'] as bool?) ?? false,
+        currency: (j['currency'] as String?) ?? 'IDR',
       );
 }
 

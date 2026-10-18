@@ -94,6 +94,24 @@ class NotificationService {
       final items = <(tz.TZDateTime, String, String)>[];
       for (final s in subs.where((s) => s.active)) {
         var due = s.nextDue;
+        if (s.onTrial) {
+          // Trial: ingatkan H-3, H-1, dan pagi hari terakhir sebelum mulai ditagih.
+          for (final d in const [3, 1, 0]) {
+            final day = due.subtract(Duration(days: d));
+            final when = tz.TZDateTime(tz.local, day.year, day.month, day.day, hour);
+            if (when.isAfter(now)) {
+              items.add((
+                when,
+                d == 0
+                    ? 'Trial ${s.name} berakhir hari ini'
+                    : 'Trial ${s.name} berakhir ${d == 1 ? 'besok' : '3 hari lagi'}',
+                'Setelah itu otomatis ditagih ${s.amountLabel}${s.cycle.perLabel} via ${s.paymentMethod}. '
+                    'Tidak ingin lanjut? Batalkan sebelum ${tanggal(due)}.',
+              ));
+            }
+          }
+          due = s.cycle.nextFrom(due, s.anchorDay);
+        }
         for (var k = 0; k < 2; k++) {
           for (final d in const [3, 1]) {
             final day = due.subtract(Duration(days: d));
@@ -102,7 +120,7 @@ class NotificationService {
               items.add((
                 when,
                 'Tagihan ${s.name} ${d == 1 ? 'besok' : '3 hari lagi'}',
-                '${rupiah(s.amount)} akan ditagih ${tanggal(due)} via ${s.paymentMethod}. '
+                '${s.amountLabel} akan ditagih ${tanggal(due)} via ${s.paymentMethod}. '
                     'Tidak dipakai? Batalkan sekarang.',
               ));
             }
