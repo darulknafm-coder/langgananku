@@ -66,7 +66,14 @@ jobs:
           sed -i 's/^ *//' android/key.properties
 
       - name: Uji logika deteksi
-        run: flutter test
+        shell: bash
+        run: |
+          set -o pipefail
+          flutter test 2>&1 | tee test.log || {
+            msg=$(grep -E "FAILED|Expected|Actual|Error|error:" test.log | tail -30 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+            echo "::error title=Tes gagal::${msg}"
+            exit 1
+          }
         continue-on-error: true
 
       - name: Build App Bundle (.aab untuk Play Store) dan APK
