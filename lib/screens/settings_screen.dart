@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../services/notification_service.dart';
+import 'lock_screen.dart';
 import '../services/repository.dart';
 import '../utils/format.dart';
 import '../widgets/common.dart';
@@ -80,6 +81,59 @@ class SettingsScreen extends StatelessWidget {
           ],
         ),
       );
+
+  Future<void> _toggleLock(BuildContext context, bool on) async {
+    final repo = Repo.instance;
+    if (on) {
+      final pin = await Navigator.of(context)
+          .push<String>(MaterialPageRoute(builder: (_) => const SetPinScreen()));
+      if (pin != null) {
+        await repo.setPin(pin);
+        _toast(context, 'Kunci aplikasi aktif.');
+      }
+    } else {
+      final ok = await Navigator.of(context).push<bool>(
+          MaterialPageRoute(builder: (_) => const SetPinScreen(verifyOnly: true)));
+      if (ok == true) {
+        await repo.setPin(null);
+        _toast(context, 'Kunci aplikasi dimatikan.');
+      }
+    }
+  }
+
+  Future<void> _editBudget(BuildContext context) async {
+    final repo = Repo.instance;
+    final ctrl = TextEditingController(
+        text: repo.monthlyBudget > 0 ? repo.monthlyBudget.toStringAsFixed(0) : '');
+    final v = await showDialog<double>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Batas anggaran per bulan'),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [
+          TextField(
+            controller: ctrl,
+            autofocus: true,
+            keyboardType: TextInputType.number,
+            decoration: inputDeco('Maksimal per bulan', prefix: 'Rp '),
+          ),
+          const SizedBox(height: 10),
+          Text('Total langganan Anda sekarang ${rupiah(repo.monthlyTotal)}/bln.',
+              style: const TextStyle(fontSize: 13)),
+        ]),
+        actions: [
+          if (repo.monthlyBudget > 0)
+            TextButton(onPressed: () => Navigator.pop(ctx, 0.0), child: const Text('Matikan')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
+          FilledButton(
+            onPressed: () => Navigator.pop(
+                ctx, double.tryParse(ctrl.text.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0),
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+    if (v != null) await repo.setBudget(v);
+  }
 
   Future<void> _editRate(BuildContext context) async {
     final repo = Repo.instance;
@@ -180,7 +234,7 @@ class SettingsScreen extends StatelessWidget {
                 child: Column(children: [
                   SwitchListTile(
                     title: const Text('Pengingat jatuh tempo'),
-                    subtitle: const Text('Notifikasi H-3 dan H-1 sebelum ditagih'),
+                    subtitle: const Text('Atur H-7/H-3/H-1/Hari-H di tiap langganan'),
                     value: repo.remindersEnabled,
                     onChanged: (v) async {
                       if (v) await NotificationService.requestPermission();
@@ -202,6 +256,48 @@ class SettingsScreen extends StatelessWidget {
                           'LanggananKu', 'Notifikasi berfungsi. Pengingat akan muncul seperti ini.');
                     },
                   ),
+                ]),
+              ),
+              const SectionTitle('Anggaran'),
+              AppCard(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: ListTile(
+                  leading: const Icon(Icons.account_balance_wallet_outlined),
+                  title: const Text('Batas anggaran per bulan'),
+                  subtitle: Text(repo.monthlyBudget > 0
+                      ? 'Terpakai ${(repo.budgetUsed * 100).toStringAsFixed(0)}% · diberi tahu bila terlampaui'
+                      : 'Belum diatur'),
+                  trailing: Text(repo.monthlyBudget > 0 ? rupiah(repo.monthlyBudget) : 'Atur',
+                      style: const TextStyle(fontWeight: FontWeight.w700)),
+                  onTap: () => _editBudget(context),
+                ),
+              ),
+              const SectionTitle('Keamanan'),
+              AppCard(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Column(children: [
+                  SwitchListTile(
+                    secondary: const Icon(Icons.lock_outline_rounded),
+                    title: const Text('Kunci aplikasi dengan PIN'),
+                    subtitle: const Text('Diminta saat membuka LanggananKu'),
+                    value: repo.lockEnabled,
+                    onChanged: (v) => _toggleLock(context, v),
+                  ),
+                  if (repo.lockEnabled)
+                    FutureBuilder<bool>(
+                      future: Biometric.available(),
+                      builder: (context, snap) => snap.data == true
+                          ? SwitchListTile(
+                              secondary: const Icon(Icons.fingerprint_rounded),
+                              title: const Text('Buka dengan sidik jari / wajah'),
+                              value: repo.bioEnabled,
+                              onChanged: (v) async {
+                                if (v && !await Biometric.authenticate()) return;
+                                await repo.setBio(v);
+                              },
+                            )
+                          : const SizedBox.shrink(),
+                    ),
                 ]),
               ),
               const SectionTitle('Mata uang'),
@@ -266,7 +362,7 @@ class SettingsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Center(
-                child: Text('LanggananKu v1.1.0',
+                child: Text('LanggananKu v1.2.0',
                     style: TextStyle(color: cs.onSurfaceVariant)),
               ),
             ],

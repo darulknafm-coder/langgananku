@@ -4,6 +4,7 @@ import '../data/catalog.dart';
 import '../models/subscription.dart';
 import '../services/detector.dart';
 import '../services/repository.dart';
+import '../theme/app_theme.dart';
 import '../utils/format.dart';
 import '../widgets/common.dart';
 
@@ -34,6 +35,7 @@ class _EditScreenState extends State<EditScreen> {
   String? _catalogKey;
   late String _currency;
   late bool _trial;
+  late Set<int> _reminders;
 
   @override
   void initState() {
@@ -43,6 +45,7 @@ class _EditScreenState extends State<EditScreen> {
     _name = TextEditingController(text: e?.name ?? c?.name ?? '');
     _currency = e?.currency ?? 'IDR';
     _trial = e?.onTrial ?? false;
+    _reminders = {...(e?.reminderDays ?? const [3, 1])};
     final a = e?.amount ?? c?.monthly;
     _amount = TextEditingController(
         text: a == null
@@ -85,6 +88,8 @@ class _EditScreenState extends State<EditScreen> {
     if (d != null) setState(() => _due = d);
   }
 
+  List<int> _sortedReminders() => _reminders.toList()..sort((a, b) => b.compareTo(a));
+
   double? _parseAmount(String v) =>
       _currency == 'USD' ? parseUsd(v) : Detector.parseRupiah(v);
 
@@ -112,6 +117,7 @@ class _EditScreenState extends State<EditScreen> {
         catalogKey: _catalogKey,
         currency: _currency,
         trialEnd: trialEnd,
+        reminderDays: _sortedReminders(),
       ));
     } else {
       e
@@ -124,7 +130,11 @@ class _EditScreenState extends State<EditScreen> {
         ..active = _active
         ..usage = _usage
         ..sharedWith = _shared
-        ..trialEnd = trialEnd;
+        ..trialEnd = trialEnd
+        ..reminderDays = _sortedReminders();
+      if (e.members.length > _shared - 1) {
+        e.members = e.members.take(_shared - 1 < 0 ? 0 : _shared - 1).toList();
+      }
       if (e.currency != _currency) {
         // Ganti mata uang: riwayat harga lama tidak sebanding, mulai ulang.
         e
@@ -259,6 +269,24 @@ class _EditScreenState extends State<EditScreen> {
               items: [for (final p in kPaymentMethods) DropdownMenuItem(value: p, child: Text(p))],
               onChanged: (v) => setState(() => _payment = v ?? _payment),
             ),
+            gap,
+            const Text('Ingatkan saya'),
+            const SizedBox(height: 6),
+            Wrap(spacing: 8, runSpacing: 8, children: [
+              for (final d in kReminderChoices)
+                FilterChip(
+                  label: Text(reminderLabel(d)),
+                  selected: _reminders.contains(d),
+                  showCheckmark: false,
+                  onSelected: (v) => setState(() => v ? _reminders.add(d) : _reminders.remove(d)),
+                ),
+            ]),
+            if (_reminders.isEmpty)
+              const Padding(
+                padding: EdgeInsets.only(top: 6),
+                child: Text('Tanpa pengingat untuk langganan ini.',
+                    style: TextStyle(fontSize: 12.5, color: AppColors.muted)),
+              ),
             gap,
             const Text('Seberapa sering dipakai?'),
             const SizedBox(height: 6),

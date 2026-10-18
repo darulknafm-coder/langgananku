@@ -113,13 +113,13 @@ class NotificationService {
           due = s.cycle.nextFrom(due, s.anchorDay);
         }
         for (var k = 0; k < 2; k++) {
-          for (final d in const [3, 1]) {
+          for (final d in s.reminderDays) {
             final day = due.subtract(Duration(days: d));
             final when = tz.TZDateTime(tz.local, day.year, day.month, day.day, hour);
             if (when.isAfter(now)) {
               items.add((
                 when,
-                'Tagihan ${s.name} ${d == 1 ? 'besok' : '3 hari lagi'}',
+                'Tagihan ${s.name} ${d == 0 ? 'hari ini' : d == 1 ? 'besok' : '$d hari lagi'}',
                 '${s.amountLabel} akan ditagih ${tanggal(due)} via ${s.paymentMethod}. '
                     'Tidak dipakai? Batalkan sekarang.',
               ));

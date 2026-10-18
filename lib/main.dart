@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'screens/home_shell.dart';
+import 'screens/lock_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'services/notification_service.dart';
 import 'services/repository.dart';
@@ -64,6 +65,7 @@ class LanggananKuApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       home: Repo.instance.onboarded ? const HomeShell() : const OnboardingScreen(),
+      builder: (context, child) => LockGate(child: child ?? const SizedBox.shrink()),
     );
   }
 }

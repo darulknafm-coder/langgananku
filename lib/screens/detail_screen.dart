@@ -53,6 +53,88 @@ class DetailScreen extends StatelessWidget {
     }
   }
 
+  Future<void> _markPaid(BuildContext context) async {
+    final repo = Repo.instance;
+    final prevDue = sub.nextDue;
+    final prevTrial = sub.trialEnd;
+    final p = await repo.markPaid(sub);
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        content: Text('Dibayar. Tagihan berikutnya ${tanggal(sub.nextDue)}.'),
+        duration: const Duration(seconds: 6),
+        action: SnackBarAction(
+          label: 'Urungkan',
+          onPressed: () => repo.undoPaid(sub, p, prevDue, prevTrial),
+        ),
+      ));
+  }
+
+  Future<void> _editMembers(BuildContext context) async {
+    final n = sub.sharedWith - 1;
+    final names = [
+      for (var i = 0; i < n; i++)
+        TextEditingController(text: i < sub.members.length ? sub.members[i].name : ''),
+    ];
+    final phones = [
+      for (var i = 0; i < n; i++)
+        TextEditingController(text: i < sub.members.length ? sub.members[i].phone : ''),
+    ];
+    final ok = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(ctx).viewInsets.bottom + 20),
+        child: SingleChildScrollView(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            const Text('Anggota patungan',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 4),
+            Text('Selain Anda, ada $n orang. Nomor WhatsApp opsional.',
+                style: const TextStyle(color: AppColors.muted)),
+            for (var i = 0; i < n; i++) ...[
+              const SizedBox(height: 14),
+              TextField(
+                controller: names[i],
+                textCapitalization: TextCapitalization.words,
+                decoration: inputDeco('Nama anggota ${i + 1}'),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: phones[i],
+                keyboardType: TextInputType.phone,
+                decoration: inputDeco('No. WhatsApp (opsional)', hint: '0812…'),
+              ),
+            ],
+            const SizedBox(height: 20),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12), child: Text('Simpan')),
+            ),
+          ]),
+        ),
+      ),
+    );
+    if (ok == true) {
+      final list = <Member>[
+        for (var i = 0; i < n; i++)
+          Member(
+            names[i].text.trim().isEmpty ? 'Anggota ${i + 1}' : names[i].text.trim(),
+            phone: phones[i].text.trim(),
+            paidFor: i < sub.members.length ? sub.members[i].paidFor : null,
+          ),
+      ];
+      await Repo.instance.saveMembers(sub, list);
+    }
+    for (final c in [...names, ...phones]) {
+      c.dispose();
+    }
+  }
+
   Future<void> _delete(BuildContext context) async {
     final ok = await showDialog<bool>(
       context: context,
@@ -228,6 +310,63 @@ class DetailScreen extends StatelessWidget {
                 ),
               ],
 
+              // ---------- Tandai dibayar ----------
+              if (sub.active) ...[
+                const SizedBox(height: 14),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 15)),
+                    onPressed: () => _markPaid(context),
+                    icon: const Icon(Icons.check_circle_rounded),
+                    label: Text('Tandai sudah dibayar · ${tanggalPendek(sub.nextDue)}',
+                        style: const TextStyle(fontWeight: FontWeight.w700)),
+                  ),
+                ),
+              ],
+
+              // ---------- Patungan ----------
+              if (sub.sharedWith > 1) ...[
+                SectionTitle('Patungan',
+                    trailing: TextButton.icon(
+                      onPressed: () => _editMembers(context),
+                      icon: const Icon(Icons.edit_outlined, size: 18),
+                      label: const Text('Atur anggota'),
+                    )),
+                _SplitCard(sub: sub),
+              ],
+
+              // ---------- Riwayat pembayaran ----------
+              if (sub.payments.isNotEmpty) ...[
+                const SectionTitle('Riwayat pembayaran'),
+                AppCard(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  child: Column(children: [
+                    for (var i = 0; i < sub.payments.length && i < 12; i++) ...[
+                      if (i > 0) const Divider(),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: Row(children: [
+                          const Icon(Icons.check_circle_rounded, color: AppColors.lime, size: 18),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                              Text('Tagihan ${tanggal(sub.payments[i].dueDate)}',
+                                  style: const TextStyle(fontWeight: FontWeight.w600)),
+                              Text('Ditandai ${tanggal(sub.payments[i].paidAt)}',
+                                  style: const TextStyle(color: AppColors.muted, fontSize: 12.5)),
+                            ]),
+                          ),
+                          Text(sub.payments[i].label,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w700, fontFeatures: kTabular)),
+                        ]),
+                      ),
+                    ],
+                  ]),
+                ),
+              ],
+
               // ---------- Riwayat harga ----------
               const SectionTitle('Riwayat harga'),
               AppCard(
@@ -309,5 +448,102 @@ class _ChangeBadge extends StatelessWidget {
         fg: up ? AppColors.coral : AppColors.lime,
         bg: up ? AppColors.coralDeep : AppColors.limeDeep,
         icon: up ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded);
+  }
+}
+
+
+/// Daftar anggota patungan: bagian masing-masing, status bayar, tagih via WhatsApp.
+class _SplitCard extends StatelessWidget {
+  final Subscription sub;
+  const _SplitCard({required this.sub});
+
+  String _waNumber(String raw) {
+    var d = raw.replaceAll(RegExp(r'[^0-9]'), '');
+    if (d.startsWith('0')) d = '62${d.substring(1)}';
+    return d;
+  }
+
+  Future<void> _remind(BuildContext context, Member m) async {
+    final share = money(sub.perPersonAmount, sub.currency);
+    final text = 'Halo ${m.name}, pengingat patungan ${sub.name}: bagianmu $share '
+        '(${sub.amountLabel} dibagi ${sub.sharedWith} orang), ditagih ${tanggal(sub.nextDue)}. '
+        'Terima kasih!';
+    final phone = _waNumber(m.phone);
+    final uri = Uri.parse(
+        'https://wa.me/${phone.isEmpty ? '' : phone}?text=${Uri.encodeComponent(text)}');
+    var ok = false;
+    try {
+      ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {}
+    if (!ok && context.mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('WhatsApp tidak bisa dibuka.')));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final repo = Repo.instance;
+    final n = sub.sharedWith - 1;
+    final members = [
+      for (var i = 0; i < n; i++) i < sub.members.length ? sub.members[i] : Member('Anggota ${i + 1}'),
+    ];
+    final paidCount = members.where(sub.memberPaid).length;
+    final share = money(sub.perPersonAmount, sub.currency);
+
+    return AppCard(
+      padding: const EdgeInsets.fromLTRB(16, 14, 8, 6),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: Row(children: [
+            Expanded(
+              child: Text('Bagian per orang $share',
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontFeatures: kTabular)),
+            ),
+            Text('$paidCount/$n sudah bayar',
+                style: TextStyle(
+                    color: paidCount == n ? AppColors.lime : AppColors.muted,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600)),
+          ]),
+        ),
+        const SizedBox(height: 4),
+        Text('Untuk tagihan ${tanggal(sub.nextDue)}',
+            style: const TextStyle(color: AppColors.muted, fontSize: 12.5)),
+        const SizedBox(height: 6),
+        for (var i = 0; i < members.length; i++) ...[
+          const Divider(),
+          Row(children: [
+            SubAvatar(name: members[i].name, color: 0xFF2A2E36, size: 34),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(members[i].name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontWeight: FontWeight.w600)),
+            ),
+            GestureDetector(
+              onTap: () async {
+                // Simpan placeholder sebagai anggota nyata sebelum menandai.
+                if (i >= sub.members.length) {
+                  await repo.saveMembers(sub, members);
+                }
+                await repo.setMemberPaid(sub, members[i], !sub.memberPaid(members[i]));
+              },
+              child: sub.memberPaid(members[i])
+                  ? const Pill('Lunas', fg: AppColors.lime, bg: AppColors.limeDeep, icon: Icons.check_rounded)
+                  : const Pill('Belum', fg: AppColors.amber, bg: AppColors.amberDeep),
+            ),
+            IconButton(
+              tooltip: 'Tagih via WhatsApp',
+              onPressed: () => _remind(context, members[i]),
+              icon: const Icon(Icons.send_rounded, size: 20, color: AppColors.muted),
+            ),
+          ]),
+        ],
+        const SizedBox(height: 4),
+      ]),
+    );
   }
 }

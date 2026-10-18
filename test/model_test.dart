@@ -66,4 +66,47 @@ void main() {
     );
     expect(s.onTrial, isFalse);
   });
+
+  test('pembayaran, anggota, pengingat tersimpan di JSON', () {
+    final due = dateOnly(DateTime.now().add(const Duration(days: 4)));
+    final s = Subscription(
+      id: '4',
+      name: 'Netflix',
+      category: 'Streaming Video',
+      amount: 65000,
+      cycle: BillingCycle.monthly,
+      nextDue: due,
+      sharedWith: 3,
+      reminderDays: [7, 0],
+      payments: [Payment(due, DateTime.now(), 65000, 'IDR')],
+      members: [Member('Budi', phone: '0812', paidFor: due)],
+    );
+    final b = Subscription.fromJson(s.toJson());
+    expect(b.reminderDays, [7, 0]);
+    expect(b.payments.single.amount, 65000);
+    expect(b.members.single.name, 'Budi');
+    expect(b.memberPaid(b.members.single), isTrue);
+    expect(b.perPersonAmount.round(), 21667);
+  });
+
+  test('tanggal tagihan dalam satu bulan', () {
+    final s = Subscription(
+      id: '5',
+      name: 'Mingguan',
+      category: 'Lainnya',
+      amount: 10000,
+      cycle: BillingCycle.weekly,
+      nextDue: DateTime(2030, 3, 5),
+      history: [PricePoint(DateTime(2030, 1, 1), 10000)],
+    );
+    final ds = s.dueDatesBetween(DateTime(2030, 3, 1), DateTime(2030, 3, 31));
+    expect(ds, [
+      DateTime(2030, 3, 5),
+      DateTime(2030, 3, 12),
+      DateTime(2030, 3, 19),
+      DateTime(2030, 3, 26),
+    ]);
+    final feb = s.dueDatesBetween(DateTime(2030, 2, 1), DateTime(2030, 2, 28));
+    expect(feb.length, 4); // 5, 12, 19, 26 Feb (ke belakang dari 5 Mar)
+  });
 }

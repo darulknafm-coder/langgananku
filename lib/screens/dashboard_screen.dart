@@ -6,6 +6,7 @@ import '../services/repository.dart';
 import '../theme/app_theme.dart';
 import '../utils/format.dart';
 import '../widgets/common.dart';
+import 'calendar_screen.dart';
 import 'catalog_picker.dart';
 import 'detail_screen.dart';
 import 'edit_screen.dart';
@@ -54,6 +55,13 @@ class DashboardScreen extends StatelessWidget {
                               fontSize: 24, fontWeight: FontWeight.w800, letterSpacing: -0.4)),
                     ]),
                   ),
+                  _RoundIcon(
+                    icon: Icons.calendar_month_rounded,
+                    tooltip: 'Kalender tagihan',
+                    onTap: () => Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (_) => const CalendarScreen())),
+                  ),
+                  const SizedBox(width: 10),
                   _Bell(count: alerts.length),
                 ]),
                 const SizedBox(height: 20),
@@ -63,6 +71,7 @@ class DashboardScreen extends StatelessWidget {
                   monthly: repo.monthlyTotal,
                   yearly: repo.yearlyTotal,
                   count: active.length,
+                  budget: repo.monthlyBudget,
                 ),
 
                 // ---------- Peringatan harga ----------
@@ -192,6 +201,30 @@ class DashboardScreen extends StatelessWidget {
   }
 }
 
+class _RoundIcon extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onTap;
+  const _RoundIcon({required this.icon, required this.tooltip, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: AppColors.surface,
+        shape: const CircleBorder(side: BorderSide(color: AppColors.line)),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onTap,
+          child: SizedBox(
+              width: 46, height: 46, child: Icon(icon, color: AppColors.text, size: 22)),
+        ),
+      ),
+    );
+  }
+}
+
 class _Bell extends StatelessWidget {
   final int count;
   const _Bell({required this.count});
@@ -231,7 +264,9 @@ class _TotalCard extends StatelessWidget {
   final double monthly;
   final double yearly;
   final int count;
-  const _TotalCard({required this.monthly, required this.yearly, required this.count});
+  final double budget;
+  const _TotalCard(
+      {required this.monthly, required this.yearly, required this.count, this.budget = 0});
 
   @override
   Widget build(BuildContext context) {
@@ -287,8 +322,47 @@ class _TotalCard extends StatelessWidget {
           stat('Per tahun', rupiah(yearly)),
           stat('Langganan aktif', '$count layanan'),
         ]),
+        if (budget > 0) ...[
+          const SizedBox(height: 16),
+          _BudgetBar(used: monthly, budget: budget),
+        ],
       ]),
     );
+  }
+}
+
+class _BudgetBar extends StatelessWidget {
+  final double used;
+  final double budget;
+  const _BudgetBar({required this.used, required this.budget});
+
+  @override
+  Widget build(BuildContext context) {
+    final ratio = used / budget;
+    final over = ratio > 1;
+    final color = over ? AppColors.coral : (ratio >= 0.85 ? AppColors.amber : AppColors.lime);
+    final rest = budget - used;
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Row(children: [
+        Expanded(
+          child: Text('Anggaran ${rupiah(budget)}',
+              style: const TextStyle(color: AppColors.muted, fontSize: 12.5)),
+        ),
+        Text(over ? 'Lewat ${rupiah(-rest)}' : 'Sisa ${rupiah(rest)}',
+            style: TextStyle(
+                color: color, fontSize: 12.5, fontWeight: FontWeight.w700, fontFeatures: kTabular)),
+      ]),
+      const SizedBox(height: 8),
+      ClipRRect(
+        borderRadius: BorderRadius.circular(99),
+        child: LinearProgressIndicator(
+          value: ratio.clamp(0, 1).toDouble(),
+          minHeight: 8,
+          backgroundColor: AppColors.surface3,
+          valueColor: AlwaysStoppedAnimation(color),
+        ),
+      ),
+    ]);
   }
 }
 

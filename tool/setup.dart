@@ -70,6 +70,26 @@ void _android() {
   manifest.writeAsStringSync(m);
   stdout.writeln('✓ AndroidManifest.xml: izin ${smsScan ? 'SMS & ' : ''}notifikasi, receiver pengingat');
 
+  // local_auth (sidik jari) butuh FlutterFragmentActivity.
+  final mainDir = Directory('android/app/src/main');
+  for (final f in mainDir.listSync(recursive: true).whereType<File>()) {
+    final name = f.path.split(Platform.pathSeparator).last;
+    if (name != 'MainActivity.kt' && name != 'MainActivity.java') continue;
+    var src = f.readAsStringSync();
+    if (!src.contains('FlutterFragmentActivity')) {
+      src = src
+          .replaceAll('io.flutter.embedding.android.FlutterActivity',
+              'io.flutter.embedding.android.FlutterFragmentActivity')
+          .replaceAll(RegExp(r'\bFlutterActivity\b'), 'FlutterFragmentActivity');
+      f.writeAsStringSync(src);
+    }
+    stdout.writeln('✓ ${f.path}: FlutterFragmentActivity (sidik jari)');
+  }
+  if (!m.contains('android.permission.USE_BIOMETRIC')) {
+    m = m.replaceFirst('<application', '<uses-permission android:name="android.permission.USE_BIOMETRIC"/>\n    <application');
+    manifest.writeAsStringSync(m);
+  }
+
   // Aturan R8/ProGuard: tanpa ini, plugin notifikasi bisa error di build rilis.
   final pro = File('android/app/proguard-rules.pro');
   const rules = '''
@@ -189,6 +209,10 @@ void _ios() {
   p = p.replaceFirst(
       RegExp(r'<key>CFBundleDisplayName</key>\s*<string>[^<]*</string>'),
       '<key>CFBundleDisplayName</key>\n\t<string>LanggananKu</string>');
+  if (!p.contains('NSFaceIDUsageDescription')) {
+    p = p.replaceFirst('<dict>',
+        '<dict>\n\t<key>NSFaceIDUsageDescription</key>\n\t<string>Face ID dipakai untuk membuka LanggananKu yang terkunci.</string>');
+  }
   // Aplikasi tidak memakai enkripsi khusus → lewati pertanyaan export compliance.
   if (!p.contains('ITSAppUsesNonExemptEncryption')) {
     p = p.replaceFirst('<dict>', '<dict>\n\t<key>ITSAppUsesNonExemptEncryption</key>\n\t<false/>');

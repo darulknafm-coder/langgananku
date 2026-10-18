@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -25,6 +26,15 @@ class Repo extends ChangeNotifier {
   int reminderHour = 9;
   bool onboarded = false;
   double usdRate = 16500;
+  /// Batas anggaran langganan per bulan (0 = tidak dipakai).
+  double monthlyBudget = 0;
+  bool _wasOverBudget = false;
+
+  // Kunci aplikasi
+  String? _pinHash;
+  String _pinSalt = '';
+  bool bioEnabled = false;
+  bool get lockEnabled => _pinHash != null;
 
   SharedPreferences? _prefs;
 
@@ -53,6 +63,10 @@ class Repo extends ChangeNotifier {
         reminderHour = (s['reminderHour'] as int?) ?? 9;
         onboarded = (s['onboarded'] as bool?) ?? false;
         usdRate = ((s['usdRate'] as num?) ?? 16500).toDouble();
+        monthlyBudget = ((s['monthlyBudget'] as num?) ?? 0).toDouble();
+        _pinHash = s['pinHash'] as String?;
+        _pinSalt = (s['pinSalt'] as String?) ?? '';
+        bioEnabled = (s['bioEnabled'] as bool?) ?? false;
       }
     } catch (_) {
       // Data rusak → mulai bersih, jangan bikin app crash.
@@ -65,6 +79,7 @@ class Repo extends ChangeNotifier {
     for (final s in subs) {
       s.rollForward();
     }
+    _wasOverBudget = isOverBudget;
     await _persist();
   }
 
@@ -124,6 +139,10 @@ class Repo extends ChangeNotifier {
           'reminderHour': reminderHour,
           'onboarded': onboarded,
           'usdRate': usdRate,
+          'monthlyBudget': monthlyBudget,
+          'pinHash': _pinHash,
+          'pinSalt': _pinSalt,
+          'bioEnabled': bioEnabled,
         }));
     // Jangan pernah menahan UI menunggu penjadwalan notifikasi.
     unawaited(NotificationService.reschedule(subs, enabled: remindersEnabled, hour: reminderHour)
@@ -140,8 +159,91 @@ class Repo extends ChangeNotifier {
   }
 
   Future<void> _commit() async {
+    final over = isOverBudget;
+    if (over && !_wasOverBudget) {
+      NotificationService.showNow('Anggaran langganan terlampaui',
+          'Total ${rupiah(monthlyTotal)}/bln melewati batas ${rupiah(monthlyBudget)}.');
+    }
+    _wasOverBudget = over;
     notifyListeners();
     await _persist();
+  }
+
+  // ---------- Anggaran ----------
+  bool get isOverBudget => monthlyBudget > 0 && monthlyTotal > monthlyBudget;
+  double get budgetUsed => monthlyBudget <= 0 ? 0 : monthlyTotal / monthlyBudget;
+
+  Future<void> setBudget(double v) async {
+    monthlyBudget = v < 0 ? 0 : v;
+    _wasOverBudget = isOverBudget; // jangan langsung kirim notifikasi saat mengatur
+    await _commit();
+  }
+
+  // ---------- Kunci aplikasi ----------
+  String _hash(String pin) => sha256.convert(utf8.encode('$_pinSalt:$pin')).toString();
+
+  bool checkPin(String pin) => _pinHash != null && _hash(pin) == _pinHash;
+
+  Future<void> setPin(String? pin) async {
+    if (pin == null) {
+      _pinHash = null;
+      bioEnabled = false;
+    } else {
+      _pinSalt = '${DateTime.now().microsecondsSinceEpoch}${Random.secure().nextInt(1 << 30)}';
+      _pinHash = _hash(pin);
+    }
+    await _commit();
+  }
+
+  Future<void> setBio(bool v) async {
+    bioEnabled = v;
+    await _commit();
+  }
+
+  // ---------- Kalender ----------
+  /// Tagihan per tanggal dalam satu bulan.
+  Map<DateTime, List<Subscription>> dueInMonth(DateTime month) {
+    final first = DateTime(month.year, month.month, 1);
+    final last = DateTime(month.year, month.month + 1, 0);
+    final m = <DateTime, List<Subscription>>{};
+    for (final s in active) {
+      for (final d in s.dueDatesBetween(first, last)) {
+        m.putIfAbsent(d, () => []).add(s);
+      }
+    }
+    return m;
+  }
+
+  // ---------- Pembayaran ----------
+  /// Tandai tagihan saat ini sudah dibayar → catat, lalu maju ke periode berikutnya.
+  Future<Payment> markPaid(Subscription s) async {
+    final p = Payment(dateOnly(s.nextDue), DateTime.now(), s.amount, s.currency);
+    s.payments.insert(0, p);
+    s.trialEnd = null;
+    s.nextDue = s.cycle.nextFrom(s.nextDue, s.anchorDay);
+    await _commit();
+    return p;
+  }
+
+  Future<void> undoPaid(Subscription s, Payment p, DateTime prevDue, DateTime? prevTrial) async {
+    s.payments.remove(p);
+    s.nextDue = prevDue;
+    s.trialEnd = prevTrial;
+    await _commit();
+  }
+
+  bool isPaid(Subscription s, DateTime due) =>
+      s.payments.any((p) => dateOnly(p.dueDate) == dateOnly(due));
+
+  // ---------- Patungan ----------
+  Future<void> saveMembers(Subscription s, List<Member> members) async {
+    s.members = members;
+    await _commit();
+  }
+
+  Future<void> setMemberPaid(Subscription s, Member m, bool paid) async {
+    m.paidFor = paid ? dateOnly(s.nextDue) : null;
+    await _commit();
   }
 
   // ---------- Ringkasan ----------
@@ -302,6 +404,7 @@ class Repo extends ChangeNotifier {
         'version': 2,
         'exportedAt': DateTime.now().toIso8601String(),
         'usdRate': usdRate,
+        'monthlyBudget': monthlyBudget,
         'subs': subs.map((s) => s.toJson()).toList(),
         'alerts': alerts.map((a) => a.toJson()).toList(),
       });
@@ -320,6 +423,8 @@ class Repo extends ChangeNotifier {
         ..clear()
         ..addAll(al.map((e) => PriceAlert.fromJson(Map<String, dynamic>.from(e as Map))));
     }
+    final budget = (j['monthlyBudget'] as num?)?.toDouble();
+    if (budget != null) monthlyBudget = budget;
     final rate = (j['usdRate'] as num?)?.toDouble();
     if (rate != null && rate > 0) {
       usdRate = rate;
