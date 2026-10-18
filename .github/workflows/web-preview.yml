@@ -31,6 +31,13 @@ jobs:
       - name: Build web (data contoh)
         run: flutter build web --release --base-href /${{ github.event.repository.name }}/app/ --dart-define=DEMO=true --dart-define=SMS_SCAN=false
 
+      - name: Rapikan judul & warna halaman
+        run: |
+          sed -i 's|<title>[^<]*</title>|<title>LanggananKu</title>|' build/web/index.html
+          sed -i 's|content="A new Flutter project."|content="LanggananKu - pantau semua langganan berbayar Anda."|' build/web/index.html
+          sed -i 's|<head>|<head>\n  <meta name="theme-color" content="#0E0F12">\n  <style>body{background:#0E0F12}</style>|' build/web/index.html
+          sed -i 's|"name": "langgananku"|"name": "LanggananKu"|; s|"short_name": "langgananku"|"short_name": "LanggananKu"|; s|"background_color": "#[0-9A-Fa-f]*"|"background_color": "#0E0F12"|; s|"theme_color": "#[0-9A-Fa-f]*"|"theme_color": "#0E0F12"|' build/web/manifest.json
+
       - name: Salin ke docs/app dan commit
         run: |
           rm -rf docs/app
