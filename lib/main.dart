@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -10,18 +12,36 @@ import 'services/repository.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.light,
-    statusBarBrightness: Brightness.dark,
-    systemNavigationBarColor: AppColors.surface,
-    systemNavigationBarIconBrightness: Brightness.light,
-  ));
-  await initializeDateFormatting('id_ID');
-  await NotificationService.init();
-  await Repo.instance.load();
-  runApp(const LanggananKuApp());
+  runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      statusBarBrightness: Brightness.dark,
+      systemNavigationBarColor: AppColors.surface,
+      systemNavigationBarIconBrightness: Brightness.light,
+    ));
+
+    try {
+      await initializeDateFormatting('id_ID').timeout(const Duration(seconds: 5));
+      await Repo.instance.load().timeout(const Duration(seconds: 8));
+    } catch (e, st) {
+      // Tampilkan layar error alih-alih macet di splash screen.
+      runApp(_StartupErrorApp(error: e, stack: st));
+      return;
+    }
+
+    runApp(const LanggananKuApp());
+
+    // Notifikasi disiapkan SETELAH layar pertama tampil, supaya
+    // aplikasi tidak pernah tertahan di splash screen.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await NotificationService.init();
+      await Repo.instance.refreshReminders();
+    });
+  }, (e, st) {
+    debugPrint('Uncaught: $e\n$st');
+  });
 }
 
 class LanggananKuApp extends StatelessWidget {
@@ -44,6 +64,41 @@ class LanggananKuApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       home: Repo.instance.onboarded ? const HomeShell() : const OnboardingScreen(),
+    );
+  }
+}
+
+/// Layar darurat bila persiapan awal gagal — berisi pesan error
+/// yang bisa di-screenshot untuk perbaikan.
+class _StartupErrorApp extends StatelessWidget {
+  final Object error;
+  final StackTrace stack;
+  const _StartupErrorApp({required this.error, required this.stack});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: buildAppTheme(),
+      home: Scaffold(
+        body: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.all(24),
+            children: [
+              const Icon(Icons.error_outline_rounded, color: AppColors.coral, size: 40),
+              const SizedBox(height: 16),
+              const Text('LanggananKu gagal dibuka',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 8),
+              const Text('Screenshot layar ini dan kirimkan ke pengembang.',
+                  style: TextStyle(color: AppColors.muted)),
+              const SizedBox(height: 20),
+              SelectableText('$error\n\n$stack',
+                  style: const TextStyle(fontSize: 12, color: AppColors.text)),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
@@ -117,8 +118,18 @@ class Repo extends ChangeNotifier {
           'reminderHour': reminderHour,
           'onboarded': onboarded,
         }));
-    await NotificationService.reschedule(subs,
-        enabled: remindersEnabled, hour: reminderHour);
+    // Jangan pernah menahan UI menunggu penjadwalan notifikasi.
+    unawaited(NotificationService.reschedule(subs, enabled: remindersEnabled, hour: reminderHour)
+        .timeout(const Duration(seconds: 20), onTimeout: () {})
+        .catchError((_) {}));
+  }
+
+  /// Jadwalkan ulang pengingat (dipanggil setelah notifikasi siap).
+  Future<void> refreshReminders() async {
+    try {
+      await NotificationService.reschedule(subs, enabled: remindersEnabled, hour: reminderHour)
+          .timeout(const Duration(seconds: 20));
+    } catch (_) {}
   }
 
   Future<void> _commit() async {

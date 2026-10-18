@@ -70,6 +70,21 @@ void _android() {
   manifest.writeAsStringSync(m);
   stdout.writeln('✓ AndroidManifest.xml: izin ${smsScan ? 'SMS & ' : ''}notifikasi, receiver pengingat');
 
+  // Aturan R8/ProGuard: tanpa ini, plugin notifikasi bisa error di build rilis.
+  final pro = File('android/app/proguard-rules.pro');
+  const rules = '''
+# flutter_local_notifications memakai Gson TypeToken
+-keep class com.dexterous.** { *; }
+-keep class com.google.gson.reflect.TypeToken { *; }
+-keep class * extends com.google.gson.reflect.TypeToken
+-keepattributes Signature
+-keepattributes *Annotation*
+''';
+  if (!pro.existsSync() || !pro.readAsStringSync().contains('com.dexterous')) {
+    pro.writeAsStringSync((pro.existsSync() ? pro.readAsStringSync() : '') + rules);
+  }
+  stdout.writeln('✓ proguard-rules.pro: aturan plugin notifikasi');
+
   final kts = File('android/app/build.gradle.kts');
   final groovy = File('android/app/build.gradle');
   if (kts.existsSync()) {

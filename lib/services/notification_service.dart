@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -37,7 +38,7 @@ class NotificationService {
           requestSoundPermission: false,
         ),
       );
-      await _plugin.initialize(settings);
+      await _plugin.initialize(settings).timeout(const Duration(seconds: 5));
       _ready = true;
     } catch (_) {
       _ready = false;
