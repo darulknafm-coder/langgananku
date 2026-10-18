@@ -42,10 +42,10 @@ class _CatalogPickerState extends State<CatalogPicker> {
                 child: Column(children: [
                   for (final c in items.where((c) => c.category == cat))
                     ListTile(
-                      leading: SubAvatar(name: c.name, color: c.color, size: 38),
+                      leading: SubAvatar(logoKey: c.key, name: c.name, color: c.color, size: 38),
                       title: Text(c.name),
-                      subtitle: Text('± ${rupiah(c.monthly)}/bln'
-                          '${c.yearly != null ? ' · ${rupiah(c.yearly!)}/thn' : ''}'),
+                      subtitle: Text('± ${money(c.monthly, c.currency)}/bln'
+                          '${c.yearly != null ? ' · ${money(c.yearly!, c.currency)}/thn' : ''}'),
                       trailing: const Icon(Icons.add),
                       onTap: () => Navigator.of(context).pushReplacement(MaterialPageRoute(
                           builder: (_) => EditScreen(fromCatalog: c))),

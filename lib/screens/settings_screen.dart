@@ -300,6 +300,17 @@ class SettingsScreen extends StatelessWidget {
                     ),
                 ]),
               ),
+              const SectionTitle('Tampilan'),
+              AppCard(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: SwitchListTile(
+                  secondary: const Icon(Icons.image_outlined),
+                  title: const Text('Tampilkan logo layanan'),
+                  subtitle: const Text('Ikon resmi diunduh sekali dari internet, lalu disimpan di HP'),
+                  value: repo.showLogos,
+                  onChanged: repo.setShowLogos,
+                ),
+              ),
               const SectionTitle('Mata uang'),
               AppCard(
                 padding: const EdgeInsets.symmetric(vertical: 4),
@@ -362,7 +373,7 @@ class SettingsScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Center(
-                child: Text('LanggananKu v1.2.0',
+                child: Text('LanggananKu v1.3.0',
                     style: TextStyle(color: cs.onSurfaceVariant)),
               ),
             ],

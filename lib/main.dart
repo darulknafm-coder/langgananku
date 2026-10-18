@@ -9,6 +9,7 @@ import 'screens/home_shell.dart';
 import 'screens/lock_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'services/notification_service.dart';
+import 'services/promo_service.dart';
 import 'services/repository.dart';
 import 'theme/app_theme.dart';
 
@@ -39,6 +40,7 @@ Future<void> main() async {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await NotificationService.init();
       await Repo.instance.refreshReminders();
+      unawaited(PromoService.instance.load());
     });
   }, (e, st) {
     debugPrint('Uncaught: $e\n$st');

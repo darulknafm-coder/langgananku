@@ -1,0 +1,128 @@
+{
+  "version": 1,
+  "updated": "2026-10-18",
+  "note": "Harga paket resmi di Indonesia, dikumpulkan dari situs resmi dan media per Oktober 2026. Harga dan promo bisa berubah sewaktu-waktu — cek situs resmi sebelum berlangganan.",
+  "services": [
+    {
+      "key": "spotify",
+      "offer": "Coba 2 bulan seharga Rp59.900",
+      "offerNote": "Khusus yang belum pernah mencoba Premium",
+      "url": "https://www.spotify.com/id-id/premium/",
+      "source": "spotify.com",
+      "plans": [
+        {"name": "Premium Student", "price": 29900, "cycle": "monthly", "note": "Mahasiswa terverifikasi"},
+        {"name": "Premium Standard", "price": 59900, "cycle": "monthly"},
+        {"name": "Premium Platinum", "price": 119900, "cycle": "monthly"}
+      ]
+    },
+    {
+      "key": "netflix",
+      "url": "https://www.netflix.com/id/",
+      "source": "netflix.com, Bisnis.com (Okt 2026)",
+      "plans": [
+        {"name": "Ponsel", "price": 54000, "cycle": "monthly", "note": "1 HP/tablet, 480p"},
+        {"name": "Dasar", "price": 65000, "cycle": "monthly"},
+        {"name": "Standar", "price": 120000, "cycle": "monthly"},
+        {"name": "Premium", "price": 186000, "cycle": "monthly"}
+      ]
+    },
+    {
+      "key": "youtube",
+      "url": "https://www.youtube.com/premium",
+      "source": "detik.com (Apr 2026)",
+      "plans": [
+        {"name": "Pelajar", "price": 27500, "cycle": "monthly", "note": "Pelajar terverifikasi"},
+        {"name": "Individu", "price": 69000, "cycle": "monthly"},
+        {"name": "Keluarga", "price": 139000, "cycle": "monthly", "note": "Hingga 5 anggota"}
+      ]
+    },
+    {
+      "key": "disney",
+      "offer": "Paket tahunan lebih hemat",
+      "offerNote": "Basic tahunan setara ±Rp37.500/bln",
+      "url": "https://www.hotstar.com/id",
+      "source": "Bisnis.com (Okt 2026)",
+      "plans": [
+        {"name": "Basic", "price": 65000, "cycle": "monthly"},
+        {"name": "Basic tahunan", "price": 450000, "cycle": "yearly"},
+        {"name": "Premium", "price": 119000, "cycle": "monthly"},
+        {"name": "Premium tahunan", "price": 799000, "cycle": "yearly"}
+      ]
+    },
+    {
+      "key": "vidio",
+      "url": "https://www.vidio.com/products/platinum",
+      "source": "Bisnis.com (Okt 2026)",
+      "plans": [
+        {"name": "Platinum", "price": 39000, "cycle": "monthly", "note": "Harga mulai dari"}
+      ]
+    },
+    {
+      "key": "prime",
+      "url": "https://www.primevideo.com/",
+      "source": "Bisnis.com (Okt 2026)",
+      "plans": [
+        {"name": "Prime Video", "price": 59000, "cycle": "monthly", "note": "Rp59.000–Rp79.000 tergantung paket"}
+      ]
+    },
+    {
+      "key": "viu",
+      "url": "https://www.viu.com/ott/id/",
+      "source": "Bisnis.com (Okt 2026)",
+      "plans": [
+        {"name": "VIP", "price": 33000, "cycle": "monthly", "note": "Harga mulai dari; versi gratis dengan iklan tersedia"}
+      ]
+    },
+    {
+      "key": "chatgpt",
+      "url": "https://chatgpt.com/pricing",
+      "source": "journalarta.com (Okt 2026)",
+      "plans": [
+        {"name": "ChatGPT Go", "price": 75000, "cycle": "monthly"},
+        {"name": "ChatGPT Plus", "price": 349000, "cycle": "monthly"},
+        {"name": "ChatGPT Pro", "price": 1889000, "cycle": "monthly", "note": "Harga mulai dari"}
+      ]
+    },
+    {
+      "key": "claude",
+      "offer": "Hemat ±17% dengan paket tahunan",
+      "offerNote": "Pro tahunan US$200 (setara US$17/bln)",
+      "url": "https://claude.com/pricing",
+      "source": "claude.com",
+      "plans": [
+        {"name": "Pro", "price": 20, "currency": "USD", "cycle": "monthly"},
+        {"name": "Pro tahunan", "price": 200, "currency": "USD", "cycle": "yearly"},
+        {"name": "Max", "price": 100, "currency": "USD", "cycle": "monthly", "note": "Harga mulai dari"}
+      ]
+    },
+    {
+      "key": "gemini",
+      "url": "https://one.google.com/about/google-ai-plans",
+      "source": "journalarta.com (Okt 2026)",
+      "plans": [
+        {"name": "Google AI Plus", "price": 75000, "cycle": "monthly"},
+        {"name": "Google AI Pro", "price": 309000, "cycle": "monthly"}
+      ]
+    },
+    {
+      "key": "canva",
+      "offer": "Uji coba gratis tersedia",
+      "offerNote": "Lihat syarat di situs Canva",
+      "url": "https://www.canva.com/id_id/pricing/",
+      "source": "canva.com",
+      "plans": [
+        {"name": "Canva Pro", "price": 95000, "cycle": "monthly", "note": "Per orang"},
+        {"name": "Canva Bisnis", "price": 130000, "cycle": "monthly", "note": "Per orang"}
+      ]
+    },
+    {
+      "key": "m365",
+      "url": "https://www.microsoft.com/id-id/microsoft-365/buy/compare-all-microsoft-365-products",
+      "source": "journalarta.com (Okt 2026)",
+      "plans": [
+        {"name": "Microsoft 365 Personal", "price": 135999, "cycle": "monthly"},
+        {"name": "Microsoft 365 Premium", "price": 329999, "cycle": "monthly"}
+      ]
+    }
+  ]
+}

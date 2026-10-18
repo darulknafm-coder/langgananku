@@ -20,7 +20,7 @@ Tahu persis berapa yang Anda bayar tiap bulan untuk Netflix, Spotify, ChatGPT, I
 langganan,tagihan,pengingat,jatuh tempo,hemat,keuangan,budget,subscription,pengeluaran,streaming
 (Jangan masukkan merek lain seperti Netflix/Spotify di kata kunci — dilarang Apple, pedoman 2.3.7)
 
-== Deskripsi lengkap — Play & App Store (maks 4000) [1484 karakter]
+== Deskripsi lengkap — Play & App Store (maks 4000) [2152 karakter]
 LanggananKu membantu Anda mengendalikan semua tagihan berulang dalam satu tempat: streaming, musik, layanan AI, cloud, internet, hingga aplikasi produktivitas.
 
 Rata-rata kita punya lebih banyak langganan daripada yang kita ingat. Harga naik diam-diam, dan pembatalan tersembunyi di menu yang sulit dicari. LanggananKu membereskan itu.
@@ -28,16 +28,22 @@ Rata-rata kita punya lebih banyak langganan daripada yang kita ingat. Harga naik
 FITUR UTAMA
 • Dasbor total: lihat pengeluaran langganan per bulan dan per tahun dalam sekali lihat.
 • Deteksi otomatis: tempel email nota atau struk, dan LanggananKu mengenali layanan, nominal, serta tanggal tagihannya.
-• Pengingat jatuh tempo: notifikasi 3 hari dan 1 hari sebelum ditagih.
+• Pengingat jatuh tempo: pilih H-7, H-3, H-1, atau di hari tagihan, untuk tiap langganan.
+• Pengingat masa trial gratis: diingatkan sebelum trial otomatis berubah jadi berbayar.
+• Kalender tagihan: lihat tanggal mana saja ada tagihan bulan ini, lalu tandai yang sudah dibayar.
 • Peringatan kenaikan harga: riwayat harga tiap langganan, dan pemberitahuan saat nominal naik.
 • Batalkan sekali ketuk: langsung ke halaman pengelolaan langganan resmi layanan tersebut.
 • Katalog 45 layanan populer di Indonesia: Netflix, Vidio, Disney+ Hotstar, Spotify, YouTube Premium, ChatGPT, Canva, Google One, IndiHome, dan lainnya.
 • Simulasi hemat: hitung berapa yang bisa dihemat bila berhenti berlangganan selama beberapa bulan.
 • Saran hemat: temukan langganan yang jarang dipakai, layanan dengan fungsi sama, dan paket tahunan yang lebih murah.
-• Mode keluarga: catat langganan patungan dan lihat bagian biaya Anda.
+• Patungan: catat anggota, bagian masing-masing, siapa yang sudah bayar, dan kirim pengingat lewat WhatsApp.
+• Batas anggaran bulanan: diberi tahu saat total langganan melewati batas.
+• Paket & promo: bandingkan harga paket resmi layanan populer dan temukan paket yang lebih hemat.
+• Langganan dalam dolar: ChatGPT, Claude, dan layanan lain yang ditagih US$ dihitung otomatis ke rupiah.
+• Kunci aplikasi dengan PIN atau sidik jari, serta cadangan data ke file.
 
 PRIVASI DI ATAS SEGALANYA
-Tanpa akun, tanpa server, tanpa iklan. Semua data dan proses deteksi berjalan di HP Anda dan tidak pernah dikirim ke mana pun.
+Tanpa akun, tanpa iklan. Semua data langganan dan proses deteksi berjalan di HP Anda dan tidak pernah dikirim ke mana pun. Internet hanya dipakai untuk mengunduh logo layanan dan daftar harga paket.
 
 Mulai sekarang dan lihat ke mana uang langganan Anda pergi setiap bulan.
 

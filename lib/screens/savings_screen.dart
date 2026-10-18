@@ -111,7 +111,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
                         child: Column(children: [
                           for (final s in rare)
                             ListTile(
-                              leading: SubAvatar(name: s.name, color: s.color, size: 38),
+                              leading: SubAvatar(logoKey: s.catalogKey, name: s.name, color: s.color, size: 38),
                               title: Text(s.name),
                               subtitle: Text('Hemat ${rupiah(s.myMonthlyCost * 12)}/tahun'),
                               trailing: const Icon(Icons.chevron_right),
@@ -150,10 +150,10 @@ class _SavingsScreenState extends State<SavingsScreen> {
                         child: Column(children: [
                           for (final s in annual)
                             ListTile(
-                              leading: SubAvatar(name: s.name, color: s.color, size: 38),
+                              leading: SubAvatar(logoKey: s.catalogKey, name: s.name, color: s.color, size: 38),
                               title: Text(s.name),
                               subtitle: Text(
-                                  '${rupiah(s.yearlyCost)}/thn → ${rupiah(catalogByKey(s.catalogKey)!.yearly!)}/thn'),
+                                  '${rupiah(s.yearlyCost)}/thn → ${money(catalogByKey(s.catalogKey)!.yearly!, catalogByKey(s.catalogKey)!.currency)}/thn'),
                               trailing: Text('-${rupiah(repo.annualSaving(s))}',
                                   style: TextStyle(
                                       color: cs.primary, fontWeight: FontWeight.w700)),
@@ -171,7 +171,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
                         child: Column(children: [
                           for (final s in shared)
                             ListTile(
-                              leading: SubAvatar(name: s.name, color: s.color, size: 38),
+                              leading: SubAvatar(logoKey: s.catalogKey, name: s.name, color: s.color, size: 38),
                               title: Text(s.name),
                               subtitle: Text(
                                   '${rupiah(s.monthlyCost)}/bln dibagi ${s.sharedWith} orang'),

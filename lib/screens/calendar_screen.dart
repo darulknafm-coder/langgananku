@@ -240,7 +240,7 @@ class _DayTile extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(children: [
-          SubAvatar(name: s.name, color: s.color),
+          SubAvatar(logoKey: s.catalogKey, name: s.name, color: s.color),
           const SizedBox(width: 14),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

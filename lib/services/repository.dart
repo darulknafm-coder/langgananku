@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../data/catalog.dart';
 import '../models/subscription.dart';
 import '../utils/format.dart';
+import 'logo_service.dart';
 import 'notification_service.dart';
 
 /// Penyimpanan lokal di perangkat (mode tanpa akun). Semua data tetap di HP.
@@ -26,6 +27,7 @@ class Repo extends ChangeNotifier {
   int reminderHour = 9;
   bool onboarded = false;
   double usdRate = 16500;
+  bool showLogos = true;
   /// Batas anggaran langganan per bulan (0 = tidak dipakai).
   double monthlyBudget = 0;
   bool _wasOverBudget = false;
@@ -63,6 +65,7 @@ class Repo extends ChangeNotifier {
         reminderHour = (s['reminderHour'] as int?) ?? 9;
         onboarded = (s['onboarded'] as bool?) ?? false;
         usdRate = ((s['usdRate'] as num?) ?? 16500).toDouble();
+        showLogos = (s['showLogos'] as bool?) ?? true;
         monthlyBudget = ((s['monthlyBudget'] as num?) ?? 0).toDouble();
         _pinHash = s['pinHash'] as String?;
         _pinSalt = (s['pinSalt'] as String?) ?? '';
@@ -72,6 +75,7 @@ class Repo extends ChangeNotifier {
       // Data rusak → mulai bersih, jangan bikin app crash.
     }
     Subscription.usdRate = usdRate;
+    LogoService.enabled = showLogos;
     // Data contoh untuk pratinjau/screenshot: flutter build ... --dart-define=DEMO=true
     if (const bool.fromEnvironment('DEMO') && subs.isEmpty) {
       _seedDemo();
@@ -139,6 +143,7 @@ class Repo extends ChangeNotifier {
           'reminderHour': reminderHour,
           'onboarded': onboarded,
           'usdRate': usdRate,
+          'showLogos': showLogos,
           'monthlyBudget': monthlyBudget,
           'pinHash': _pinHash,
           'pinSalt': _pinSalt,
@@ -282,7 +287,8 @@ class Repo extends ChangeNotifier {
   double annualSaving(Subscription s) {
     final c = catalogByKey(s.catalogKey);
     if (c?.yearly == null || s.cycle == BillingCycle.yearly) return 0;
-    final diff = s.yearlyCost - c!.yearly!;
+    final y = c!.currency == 'USD' ? c.yearly! * usdRate : c.yearly!;
+    final diff = s.yearlyCost - y;
     return diff > 0 ? diff : 0;
   }
 
@@ -368,6 +374,13 @@ class Repo extends ChangeNotifier {
     subs.insert(index.clamp(0, subs.length), s);
     alerts.addAll(removedAlerts);
     alerts.sort((a, b) => b.date.compareTo(a.date));
+    await _commit();
+  }
+
+  Future<void> setShowLogos(bool v) async {
+    showLogos = v;
+    LogoService.enabled = v;
+    if (!v) await LogoService.clear();
     await _commit();
   }
 

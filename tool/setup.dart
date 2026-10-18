@@ -32,6 +32,7 @@ void _android() {
   var m = manifest.readAsStringSync();
   final perms = [
     if (smsScan) 'android.permission.READ_SMS',
+    'android.permission.INTERNET', // logo layanan & data promo
     'android.permission.POST_NOTIFICATIONS',
     'android.permission.RECEIVE_BOOT_COMPLETED',
     'android.permission.VIBRATE',

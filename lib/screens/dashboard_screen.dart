@@ -10,6 +10,8 @@ import 'calendar_screen.dart';
 import 'catalog_picker.dart';
 import 'detail_screen.dart';
 import 'edit_screen.dart';
+import 'promo_screen.dart';
+import '../services/promo_service.dart';
 import 'scan_screen.dart';
 
 String _salam() {
@@ -117,6 +119,8 @@ class DashboardScreen extends StatelessWidget {
                 if (active.isEmpty) ...[
                   const SizedBox(height: 20),
                   const _EmptyState(),
+                  const SizedBox(height: 14),
+                  const _PromoEntry(),
                 ] else ...[
                   // ---------- Segera ditagih ----------
                   SectionTitle('Segera ditagih',
@@ -134,6 +138,9 @@ class DashboardScreen extends StatelessWidget {
                       },
                     ),
                   ),
+
+                  const SizedBox(height: 16),
+                  const _PromoEntry(),
 
                   // ---------- Potensi hemat ----------
                   if (saving > 0) ...[
@@ -195,6 +202,57 @@ class DashboardScreen extends StatelessWidget {
               ],
             ),
           ),
+        );
+      },
+    );
+  }
+}
+
+class _PromoEntry extends StatelessWidget {
+  const _PromoEntry();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: PromoService.instance,
+      builder: (context, _) {
+        final p = PromoService.instance;
+        final offers = p.services.where((s) => s.offer != null).length;
+        final logos = p.services.take(4).toList();
+        return AppCard(
+          onTap: () => Navigator.of(context)
+              .push(MaterialPageRoute(builder: (_) => const PromoScreen())),
+          padding: const EdgeInsets.all(16),
+          child: Row(children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                  color: AppColors.limeDeep, borderRadius: BorderRadius.circular(14)),
+              child: const Icon(Icons.local_offer_rounded, color: AppColors.lime),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                const Text('Paket & promo layanan',
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15.5)),
+                const SizedBox(height: 2),
+                Text(
+                    p.services.isEmpty
+                        ? 'Bandingkan harga paket resmi'
+                        : '${p.services.length} layanan · $offers promo aktif',
+                    style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+              ]),
+            ),
+            for (final s in logos)
+              if (catalogByKey(s.key) case final c?)
+                Padding(
+                  padding: const EdgeInsets.only(left: 4),
+                  child: SubAvatar(logoKey: c.key, name: c.name, color: c.color, size: 24),
+                ),
+            const SizedBox(width: 4),
+            const Icon(Icons.chevron_right_rounded, color: AppColors.faint),
+          ]),
         );
       },
     );
@@ -380,7 +438,7 @@ class _UpcomingCard extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            SubAvatar(name: s.name, color: s.color, size: 38),
+            SubAvatar(logoKey: s.catalogKey, name: s.name, color: s.color, size: 38),
             const Spacer(),
           ]),
           const Spacer(),
@@ -484,7 +542,7 @@ class _EmptyState extends StatelessWidget {
             for (final key in _popular)
               if (catalogByKey(key) case final c?)
                 ActionChip(
-                  avatar: SubAvatar(name: c.name, color: c.color, size: 22),
+                  avatar: SubAvatar(logoKey: c.key, name: c.name, color: c.color, size: 22),
                   label: Text(c.name.split(' (').first),
                   backgroundColor: AppColors.surface2,
                   side: const BorderSide(color: AppColors.line),

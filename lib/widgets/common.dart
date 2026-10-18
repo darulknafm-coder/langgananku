@@ -1,28 +1,106 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart' show Uint8List;
 import 'package:flutter/material.dart';
 
+import '../data/catalog.dart';
 import '../models/subscription.dart';
+import '../services/logo_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/format.dart';
 
-/// Logo layanan: kotak membulat berwarna brand + inisial.
-class SubAvatar extends StatelessWidget {
+/// Logo layanan: ikon resmi situs layanan bila tersedia (diunduh sekali lalu
+/// disimpan), selain itu kotak membulat berwarna brand + inisial.
+class SubAvatar extends StatefulWidget {
   final String name;
   final int color;
   final double size;
-  const SubAvatar({super.key, required this.name, required this.color, this.size = 44});
+  /// Kunci katalog (bila diketahui). Bila null dicocokkan dari nama.
+  final String? logoKey;
+  /// false = selalu inisial (mis. untuk nama orang).
+  final bool logo;
+  const SubAvatar({
+    super.key,
+    required this.name,
+    required this.color,
+    this.size = 44,
+    this.logoKey,
+    this.logo = true,
+  });
+
+  @override
+  State<SubAvatar> createState() => _SubAvatarState();
+}
+
+class _SubAvatarState extends State<SubAvatar> {
+  Uint8List? _bytes;
+  String? _domain;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolve();
+  }
+
+  @override
+  void didUpdateWidget(SubAvatar old) {
+    super.didUpdateWidget(old);
+    if (old.name != widget.name || old.logoKey != widget.logoKey) _resolve();
+  }
+
+  void _resolve() {
+    _bytes = null;
+    _domain = null;
+    if (!widget.logo || !LogoService.enabled) return;
+    final item = catalogByKey(widget.logoKey) ??
+        kCatalog.where((c) => c.name.toLowerCase() == widget.name.trim().toLowerCase()).firstOrNull ??
+        matchCatalog(widget.name);
+    if (item == null) return;
+    final domain = item.domain;
+    _domain = domain;
+    _bytes = LogoService.cached(domain);
+    if (_bytes == null) {
+      LogoService.get(domain).then((b) {
+        if (mounted && b != null && _domain == domain) setState(() => _bytes = b);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final words = name.trim().split(RegExp(r'\s+'));
+    final size = widget.size;
+    final radius = BorderRadius.circular(size * 0.32);
+    if (_bytes != null) {
+      return Container(
+        width: size,
+        height: size,
+        padding: EdgeInsets.all(size * 0.16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: radius,
+          border: Border.all(color: Colors.white.withAlpha(18)),
+        ),
+        child: Image.memory(
+          _bytes!,
+          fit: BoxFit.contain,
+          filterQuality: FilterQuality.medium,
+          gaplessPlayback: true,
+          errorBuilder: (_, __, ___) => _initials(size, radius),
+        ),
+      );
+    }
+    return _initials(size, radius);
+  }
+
+  Widget _initials(double size, BorderRadius radius) {
+    final words = widget.name.trim().split(RegExp(r'\s+'));
     final initials = words.isEmpty || words.first.isEmpty
         ? '?'
         : (words.length == 1
                 ? words.first.substring(0, words.first.length >= 2 ? 2 : 1)
                 : '${words[0][0]}${words[1][0]}')
             .toUpperCase();
-    final c = Color(color);
+    final c = Color(widget.color);
     final light = c.computeLuminance() > 0.55;
     return Container(
       width: size,
@@ -30,7 +108,7 @@ class SubAvatar extends StatelessWidget {
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: c,
-        borderRadius: BorderRadius.circular(size * 0.32),
+        borderRadius: radius,
         border: Border.all(color: Colors.white.withAlpha(18)),
       ),
       child: Text(initials,
@@ -167,7 +245,7 @@ class SubTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(children: [
           Opacity(
-              opacity: s.active ? 1 : 0.35, child: SubAvatar(name: s.name, color: s.color)),
+              opacity: s.active ? 1 : 0.35, child: SubAvatar(name: s.name, color: s.color, logoKey: s.catalogKey)),
           const SizedBox(width: 14),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

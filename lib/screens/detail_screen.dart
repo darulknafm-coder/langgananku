@@ -8,6 +8,8 @@ import '../theme/app_theme.dart';
 import '../utils/format.dart';
 import '../widgets/common.dart';
 import 'edit_screen.dart';
+import 'promo_screen.dart';
+import '../services/promo_service.dart';
 
 class DetailScreen extends StatelessWidget {
   final Subscription sub;
@@ -180,7 +182,7 @@ class DetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final repo = Repo.instance;
     return ListenableBuilder(
-      listenable: repo,
+      listenable: Listenable.merge([repo, PromoService.instance]),
       builder: (context, _) {
         final saving = repo.annualSaving(sub);
         final history = sub.history.reversed.toList();
@@ -227,7 +229,7 @@ class DetailScreen extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 40),
             children: [
               // ---------- Hero ----------
-              Center(child: SubAvatar(name: sub.name, color: sub.color, size: 76)),
+              Center(child: SubAvatar(logoKey: sub.catalogKey, name: sub.name, color: sub.color, size: 76)),
               const SizedBox(height: 14),
               Center(
                 child: Text(sub.name,
@@ -365,6 +367,12 @@ class DetailScreen extends StatelessWidget {
                     ],
                   ]),
                 ),
+              ],
+
+              // ---------- Paket & promo resmi ----------
+              if (PromoService.instance.forKey(sub.catalogKey) case final promo?) ...[
+                const SectionTitle('Paket & promo resmi'),
+                PromoCard(promo: promo, mine: sub, compact: true),
               ],
 
               // ---------- Riwayat harga ----------
@@ -515,7 +523,7 @@ class _SplitCard extends StatelessWidget {
         for (var i = 0; i < members.length; i++) ...[
           const Divider(),
           Row(children: [
-            SubAvatar(name: members[i].name, color: 0xFF2A2E36, size: 34),
+            SubAvatar(logo: false, name: members[i].name, color: 0xFF2A2E36, size: 34),
             const SizedBox(width: 12),
             Expanded(
               child: Text(members[i].name,

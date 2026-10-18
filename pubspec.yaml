@@ -1,7 +1,7 @@
 name: langgananku
 description: LanggananKu - kendali penuh atas semua tagihan berulang Anda.
 publish_to: 'none'
-version: 1.2.0+1
+version: 1.3.0+1
 
 environment:
   sdk: '>=3.4.0 <4.0.0'
@@ -20,6 +20,7 @@ dependencies:
   flutter_sms_inbox: ^1.0.3
   file_picker: ^10.3.2
   crypto: ^3.0.3
+  http: ^1.2.2
   local_auth: ^2.3.0
 
 dev_dependencies:
@@ -30,6 +31,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/data/promos.json
   fonts:
     - family: PlusJakartaSans
       fonts:

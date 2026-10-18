@@ -12,7 +12,17 @@ import '../widgets/common.dart';
 class EditScreen extends StatefulWidget {
   final Subscription? existing;
   final CatalogItem? fromCatalog;
-  const EditScreen({super.key, this.existing, this.fromCatalog});
+  /// Isi awal dari halaman Paket & Promo (paket yang dipilih).
+  final double? initialAmount;
+  final String? initialCurrency;
+  final BillingCycle? initialCycle;
+  const EditScreen(
+      {super.key,
+      this.existing,
+      this.fromCatalog,
+      this.initialAmount,
+      this.initialCurrency,
+      this.initialCycle});
 
   @override
   State<EditScreen> createState() => _EditScreenState();
@@ -43,10 +53,10 @@ class _EditScreenState extends State<EditScreen> {
     final e = widget.existing;
     final c = widget.fromCatalog;
     _name = TextEditingController(text: e?.name ?? c?.name ?? '');
-    _currency = e?.currency ?? 'IDR';
+    _currency = widget.initialCurrency ?? e?.currency ?? c?.currency ?? 'IDR';
     _trial = e?.onTrial ?? false;
     _reminders = {...(e?.reminderDays ?? const [3, 1])};
-    final a = e?.amount ?? c?.monthly;
+    final a = widget.initialAmount ?? e?.amount ?? c?.monthly;
     _amount = TextEditingController(
         text: a == null
             ? ''
@@ -57,7 +67,7 @@ class _EditScreenState extends State<EditScreen> {
     _note = TextEditingController(text: e?.note ?? '');
     _category = e?.category ?? c?.category ?? 'Lainnya';
     if (!kCategories.contains(_category)) _category = 'Lainnya';
-    _cycle = e?.cycle ?? BillingCycle.monthly;
+    _cycle = widget.initialCycle ?? e?.cycle ?? BillingCycle.monthly;
     _due = e?.nextDue ?? addMonths(dateOnly(DateTime.now()), 1);
     _payment = e?.paymentMethod ?? 'Kartu Kredit';
     if (!kPaymentMethods.contains(_payment)) _payment = 'Lainnya';
