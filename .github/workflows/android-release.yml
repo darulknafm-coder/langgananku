@@ -4,6 +4,7 @@ name: Android rilis (Play Store)
 on:
   push:
     branches: [main]
+    paths-ignore: ['docs/**', 'store/**', '*.md']
   workflow_dispatch:
     inputs:
       sms_scan:

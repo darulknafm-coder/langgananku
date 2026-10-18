@@ -54,10 +54,56 @@ class Repo extends ChangeNotifier {
     } catch (_) {
       // Data rusak → mulai bersih, jangan bikin app crash.
     }
+    // Data contoh untuk pratinjau/screenshot: flutter build ... --dart-define=DEMO=true
+    if (const bool.fromEnvironment('DEMO') && subs.isEmpty) {
+      _seedDemo();
+    }
     for (final s in subs) {
       s.rollForward();
     }
     await _persist();
+  }
+
+  void _seedDemo() {
+    final today = DateTime.now();
+    DateTime d(int days) => DateTime(today.year, today.month, today.day + days);
+    Subscription mk(String key, double amount, int dueIn,
+        {String pay = 'Kartu Kredit', Usage usage = Usage.often, int shared = 1, double? oldPrice}) {
+      final c = catalogByKey(key)!;
+      final due = d(dueIn);
+      return Subscription(
+        id: newId(),
+        name: c.name,
+        category: c.category,
+        amount: amount,
+        cycle: BillingCycle.monthly,
+        nextDue: due,
+        paymentMethod: pay,
+        cancelUrl: c.cancelUrl,
+        color: c.color,
+        usage: usage,
+        sharedWith: shared,
+        catalogKey: key,
+        history: [
+          if (oldPrice != null) PricePoint(d(-150), oldPrice),
+          PricePoint(d(oldPrice != null ? -30 : -90), amount),
+        ],
+      );
+    }
+
+    final netflix = mk('netflix', 65000, 2, pay: 'GoPay', shared: 2, oldPrice: 54000);
+    subs.addAll([
+      netflix,
+      mk('spotify', 54990, 9),
+      mk('chatgpt', 330000, 14),
+      mk('claude', 330000, 20, usage: Usage.rarely),
+      mk('canva', 95000, 5, pay: 'DANA'),
+      mk('googleone', 26900, 24, pay: 'Google Play'),
+      mk('indihome', 300000, 11, pay: 'Transfer Bank'),
+      mk('vidio', 39000, 17, pay: 'Pulsa', usage: Usage.rarely),
+    ]);
+    alerts.add(PriceAlert(
+        subId: netflix.id, name: 'Netflix', oldAmount: 54000, newAmount: 65000, date: d(-30)));
   }
 
   Future<void> _persist() async {

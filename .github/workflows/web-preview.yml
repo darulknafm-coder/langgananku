@@ -1,0 +1,44 @@
+name: Pratinjau web (GitHub Pages)
+
+# Membangun versi web aplikasi (dengan data contoh) ke docs/app/
+# sehingga bisa dibuka dari HP mana pun di:
+# https://<akun>.github.io/langgananku/app/
+on:
+  push:
+    branches: [main]
+    paths: ['lib/**', 'pubspec.yaml', 'assets/**', '.github/workflows/web-preview.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Siapkan platform web
+        run: flutter create --org id.langgananku --project-name langgananku --platforms web .
+
+      - run: flutter pub get
+
+      - name: Build web (data contoh)
+        run: flutter build web --release --base-href /${{ github.event.repository.name }}/app/ --dart-define=DEMO=true --dart-define=SMS_SCAN=false
+
+      - name: Salin ke docs/app dan commit
+        run: |
+          rm -rf docs/app
+          mkdir -p docs/app
+          cp -r build/web/. docs/app/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/app
+          if git diff --cached --quiet; then echo "Tidak ada perubahan"; exit 0; fi
+          git commit -m "Perbarui pratinjau web"
+          git push

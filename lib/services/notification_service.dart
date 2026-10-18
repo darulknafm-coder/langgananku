@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
@@ -24,6 +25,7 @@ class NotificationService {
   );
 
   static Future<void> init() async {
+    if (kIsWeb) return;
     try {
       tzdata.initializeTimeZones();
       tz.setLocalLocation(_guessLocation());

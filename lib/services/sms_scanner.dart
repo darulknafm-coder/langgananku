@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_sms_inbox/flutter_sms_inbox.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -11,7 +12,7 @@ class SmsScanner {
   /// Build tanpa fitur SMS: flutter build appbundle --dart-define=SMS_SCAN=false
   static const bool _enabled = bool.fromEnvironment('SMS_SCAN', defaultValue: true);
 
-  static bool get supported => _enabled && Platform.isAndroid;
+  static bool get supported => _enabled && !kIsWeb && Platform.isAndroid;
 
   static Future<List<RawMessage>> readInbox({int days = 400}) async {
     if (!supported) return [];
