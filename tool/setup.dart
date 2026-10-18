@@ -79,6 +79,11 @@ void _android() {
 -keep class * extends com.google.gson.reflect.TypeToken
 -keepattributes Signature
 -keepattributes *Annotation*
+# Plugin Flutter (shared_preferences, dll.) dan coroutine Kotlin
+-keep class io.flutter.plugins.** { *; }
+-keep class dev.flutter.pigeon.** { *; }
+-keep class kotlinx.coroutines.** { *; }
+-keepclassmembers class * { *** getAll(...); }
 ''';
   if (!pro.existsSync() || !pro.readAsStringSync().contains('com.dexterous')) {
     pro.writeAsStringSync((pro.existsSync() ? pro.readAsStringSync() : '') + rules);
@@ -130,7 +135,10 @@ android {''');
 
     buildTypes {''');
     g = g.replaceFirst(RegExp(r'signingConfig\s*=\s*signingConfigs\.getByName\("debug"\)'),
-        'signingConfig = if (keystorePropertiesFile.exists()) signingConfigs.getByName("release") else signingConfigs.getByName("debug")');
+        'signingConfig = if (keystorePropertiesFile.exists()) signingConfigs.getByName("release") else signingConfigs.getByName("debug")\n'
+        '            // R8 dimatikan: pengecil kode merusak plugin shared_preferences di build rilis.\n'
+        '            isMinifyEnabled = false\n'
+        '            isShrinkResources = false');
   }
   return g;
 }
@@ -164,7 +172,9 @@ android {''');
 
     buildTypes {''');
     g = g.replaceFirst(RegExp(r'signingConfig\s*=?\s*signingConfigs\.debug'),
-        'signingConfig keystorePropertiesFile.exists() ? signingConfigs.release : signingConfigs.debug');
+        'signingConfig keystorePropertiesFile.exists() ? signingConfigs.release : signingConfigs.debug\n'
+        '            minifyEnabled false\n'
+        '            shrinkResources false');
   }
   return g;
 }
