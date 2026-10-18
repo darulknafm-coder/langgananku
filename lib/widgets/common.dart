@@ -1,13 +1,17 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../models/subscription.dart';
+import '../theme/app_theme.dart';
 import '../utils/format.dart';
 
+/// Logo layanan: kotak membulat berwarna brand + inisial.
 class SubAvatar extends StatelessWidget {
   final String name;
   final int color;
   final double size;
-  const SubAvatar({super.key, required this.name, required this.color, this.size = 42});
+  const SubAvatar({super.key, required this.name, required this.color, this.size = 44});
 
   @override
   Widget build(BuildContext context) {
@@ -18,17 +22,23 @@ class SubAvatar extends StatelessWidget {
                 ? words.first.substring(0, words.first.length >= 2 ? 2 : 1)
                 : '${words[0][0]}${words[1][0]}')
             .toUpperCase();
+    final c = Color(color);
+    final light = c.computeLuminance() > 0.55;
     return Container(
       width: size,
       height: size,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: Color(color),
-        borderRadius: BorderRadius.circular(size * 0.3),
+        color: c,
+        borderRadius: BorderRadius.circular(size * 0.32),
+        border: Border.all(color: Colors.white.withAlpha(18)),
       ),
       child: Text(initials,
           style: TextStyle(
-              color: Colors.white, fontWeight: FontWeight.w700, fontSize: size * 0.36)),
+              color: light ? AppColors.onLime : Colors.white,
+              fontWeight: FontWeight.w800,
+              fontSize: size * 0.34,
+              letterSpacing: 0.3)),
     );
   }
 }
@@ -41,20 +51,96 @@ class SectionTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 20, 4, 8),
+      padding: const EdgeInsets.fromLTRB(2, 26, 2, 12),
       child: Row(children: [
         Expanded(
-            child: Text(text,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.w700))),
+          child: Text(text,
+              style: const TextStyle(
+                  fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.text)),
+        ),
         if (trailing != null) trailing!,
       ]),
     );
   }
 }
 
+/// Kartu permukaan standar.
+class AppCard extends StatelessWidget {
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+  final Color? color;
+  final Color? borderColor;
+  final VoidCallback? onTap;
+  const AppCard({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.all(18),
+    this.color,
+    this.borderColor,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final radius = BorderRadius.circular(20);
+    return Material(
+      color: color ?? AppColors.surface,
+      borderRadius: radius,
+      child: InkWell(
+        borderRadius: radius,
+        onTap: onTap,
+        child: Container(
+          width: double.infinity,
+          padding: padding,
+          decoration: BoxDecoration(
+            borderRadius: radius,
+            border: Border.all(color: borderColor ?? AppColors.line),
+          ),
+          child: child,
+        ),
+      ),
+    );
+  }
+}
+
+/// Label kecil berbentuk kapsul.
+class Pill extends StatelessWidget {
+  final String text;
+  final Color fg;
+  final Color bg;
+  final IconData? icon;
+  const Pill(this.text, {super.key, required this.fg, required this.bg, this.icon});
+
+  factory Pill.due(DateTime due, {Key? key}) {
+    final n = daysUntil(due);
+    if (n <= 1) {
+      return Pill(sisaHari(due), key: key, fg: AppColors.coral, bg: AppColors.coralDeep);
+    }
+    if (n <= 3) {
+      return Pill(sisaHari(due), key: key, fg: AppColors.amber, bg: AppColors.amberDeep);
+    }
+    return Pill(sisaHari(due), key: key, fg: AppColors.muted, bg: AppColors.surface3);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(99)),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        if (icon != null) ...[
+          Icon(icon, size: 12, color: fg),
+          const SizedBox(width: 4),
+        ],
+        Text(text,
+            style: TextStyle(
+                color: fg, fontSize: 11.5, fontWeight: FontWeight.w700, letterSpacing: 0.2)),
+      ]),
+    );
+  }
+}
+
+/// Baris langganan dalam daftar.
 class SubTile extends StatelessWidget {
   final Subscription s;
   final VoidCallback? onTap;
@@ -62,68 +148,181 @@ class SubTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final days = daysUntil(s.nextDue);
-    final urgent = s.active && days <= 3;
-    return ListTile(
+    return InkWell(
       onTap: onTap,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-      leading: Opacity(
-          opacity: s.active ? 1 : 0.4, child: SubAvatar(name: s.name, color: s.color)),
-      title: Text(s.name,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-              fontWeight: FontWeight.w600,
-              decoration: s.active ? null : TextDecoration.lineThrough)),
-      subtitle: Text(
-        s.active
-            ? '${tanggalPendek(s.nextDue)} · ${sisaHari(s.nextDue)} · ${s.paymentMethod}'
-            : 'Nonaktif',
-        style: TextStyle(color: urgent ? cs.error : null),
-      ),
-      trailing: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text(rupiah(s.amount), style: const TextStyle(fontWeight: FontWeight.w700)),
-          Text(s.cycle.perLabel + (s.sharedWith > 1 ? ' · ÷${s.sharedWith}' : ''),
-              style: Theme.of(context).textTheme.bodySmall),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(children: [
+          Opacity(
+              opacity: s.active ? 1 : 0.35, child: SubAvatar(name: s.name, color: s.color)),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(s.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      fontSize: 15.5,
+                      fontWeight: FontWeight.w700,
+                      color: s.active ? AppColors.text : AppColors.faint,
+                      decoration: s.active ? null : TextDecoration.lineThrough)),
+              const SizedBox(height: 5),
+              Row(children: [
+                if (s.active) Pill.due(s.nextDue) else
+                  const Pill('Nonaktif', fg: AppColors.faint, bg: AppColors.surface3),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    s.active ? '${tanggalPendek(s.nextDue)} · ${s.paymentMethod}' : s.paymentMethod,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 12.5, color: AppColors.muted),
+                  ),
+                ),
+              ]),
+            ]),
+          ),
+          const SizedBox(width: 10),
+          Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+            Text(rupiah(s.amount),
+                style: const TextStyle(
+                    fontSize: 15, fontWeight: FontWeight.w700, fontFeatures: kTabular)),
+            const SizedBox(height: 3),
+            Text(s.cycle.perLabel + (s.sharedWith > 1 ? ' · ÷${s.sharedWith}' : ''),
+                style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+          ]),
+        ]),
       ),
     );
   }
 }
 
-/// Kartu datar dengan sudut membulat.
-class AppCard extends StatelessWidget {
-  final Widget child;
-  final EdgeInsetsGeometry padding;
-  final Color? color;
-  const AppCard(
-      {super.key, required this.child, this.padding = const EdgeInsets.all(16), this.color});
+/// Grup baris dalam satu kartu dengan garis pemisah.
+class TileGroup extends StatelessWidget {
+  final List<Widget> children;
+  const TileGroup({super.key, required this.children});
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      width: double.infinity,
-      padding: padding,
-      decoration: BoxDecoration(
-        color: color ?? cs.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: cs.outlineVariant.withAlpha(120)),
+    return AppCard(
+      padding: EdgeInsets.zero,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Column(children: [
+          for (var i = 0; i < children.length; i++) ...[
+            if (i > 0) const Divider(indent: 74),
+            children[i],
+          ],
+        ]),
       ),
-      child: child,
     );
   }
 }
 
-InputDecoration inputDeco(String label, {String? hint, String? prefix, String? helper}) =>
-    InputDecoration(
-      labelText: label,
+/// Grafik donat sederhana untuk komposisi pengeluaran.
+class DonutChart extends StatelessWidget {
+  final List<double> values;
+  final List<Color> colors;
+  final double size;
+  final double stroke;
+  final Widget? center;
+  const DonutChart({
+    super.key,
+    required this.values,
+    required this.colors,
+    this.size = 140,
+    this.stroke = 16,
+    this.center,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(
+        painter: _DonutPainter(values, colors, stroke),
+        child: Center(child: center),
+      ),
+    );
+  }
+}
+
+class _DonutPainter extends CustomPainter {
+  final List<double> values;
+  final List<Color> colors;
+  final double stroke;
+  _DonutPainter(this.values, this.colors, this.stroke);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Rect.fromLTWH(stroke / 2, stroke / 2, size.width - stroke, size.height - stroke);
+    final track = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = stroke
+      ..color = AppColors.surface3;
+    canvas.drawArc(rect, 0, math.pi * 2, false, track);
+    final total = values.fold<double>(0, (a, b) => a + b);
+    if (total <= 0) return;
+    final gap = values.where((v) => v > 0).length > 1 ? 0.06 : 0.0;
+    var start = -math.pi / 2;
+    for (var i = 0; i < values.length; i++) {
+      final sweep = values[i] / total * math.pi * 2;
+      if (sweep <= 0) continue;
+      final p = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = stroke
+        ..strokeCap = StrokeCap.butt
+        ..color = colors[i % colors.length];
+      canvas.drawArc(rect, start + gap / 2, math.max(0.001, sweep - gap), false, p);
+      start += sweep;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _DonutPainter old) =>
+      old.values != values || old.colors != colors || old.stroke != stroke;
+}
+
+InputDecoration inputDeco(String label, {String? hint, String? prefix, String? helper}) {
+  OutlineInputBorder b(Color c, [double w = 1]) => OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: c, width: w),
+      );
+  return InputDecoration(
+    labelText: label,
+    hintText: hint,
+    prefixText: prefix,
+    helperText: helper,
+    filled: true,
+    fillColor: AppColors.surface,
+    labelStyle: const TextStyle(color: AppColors.muted),
+    floatingLabelStyle: const TextStyle(color: AppColors.lime, fontWeight: FontWeight.w600),
+    helperStyle: const TextStyle(color: AppColors.faint),
+    hintStyle: const TextStyle(color: AppColors.faint),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+    border: b(AppColors.line),
+    enabledBorder: b(AppColors.line),
+    focusedBorder: b(AppColors.lime, 1.6),
+    errorBorder: b(AppColors.coral),
+    focusedErrorBorder: b(AppColors.coral, 1.6),
+  );
+}
+
+/// Kolom pencarian berbentuk kapsul.
+InputDecoration searchDeco(String hint) => InputDecoration(
       hintText: hint,
-      prefixText: prefix,
-      helperText: helper,
-      border: const OutlineInputBorder(),
+      prefixIcon: const Icon(Icons.search_rounded, color: AppColors.muted),
+      filled: true,
+      fillColor: AppColors.surface,
+      isDense: true,
+      contentPadding: const EdgeInsets.symmetric(vertical: 14),
+      hintStyle: const TextStyle(color: AppColors.faint),
+      border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(99), borderSide: const BorderSide(color: AppColors.line)),
+      enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(99), borderSide: const BorderSide(color: AppColors.line)),
+      focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(99),
+          borderSide: const BorderSide(color: AppColors.lime, width: 1.4)),
     );

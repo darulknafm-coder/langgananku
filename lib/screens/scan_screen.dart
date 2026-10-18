@@ -98,7 +98,7 @@ class _ScanScreenState extends State<ScanScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Deteksi otomatis')),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 4, 16, 120),
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 120),
         children: [
           AppCard(
             color: cs.secondaryContainer,
@@ -140,10 +140,7 @@ class _ScanScreenState extends State<ScanScreen> {
             controller: _text,
             minLines: 5,
             maxLines: 12,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              hintText: 'Tempel teks di sini…',
-            ),
+            decoration: inputDeco('Teks SMS / email', hint: 'Tempel teks di sini…'),
           ),
           const SizedBox(height: 8),
           Row(children: [

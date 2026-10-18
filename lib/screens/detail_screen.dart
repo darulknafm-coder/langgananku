@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../data/catalog.dart';
 import '../models/subscription.dart';
 import '../services/repository.dart';
+import '../theme/app_theme.dart';
 import '../utils/format.dart';
 import '../widgets/common.dart';
 import 'edit_screen.dart';
@@ -28,12 +29,15 @@ class DetailScreen extends StatelessWidget {
           .showSnackBar(SnackBar(content: Text('Tidak bisa membuka $url')));
       return;
     }
-    // Setelah kembali dari halaman pembatalan, tanyakan hasilnya.
     final done = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Sudah dibatalkan?'),
-        content: Text('Tandai ${sub.name} sebagai nonaktif agar tidak dihitung lagi.'),
+        backgroundColor: AppColors.surface,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Text('Sudah dibatalkan?', style: TextStyle(fontWeight: FontWeight.w800)),
+        content: Text('Tandai ${sub.name} sebagai nonaktif agar tidak dihitung lagi.',
+            style: const TextStyle(color: AppColors.muted)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Belum')),
           FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Sudah, tandai')),
@@ -43,8 +47,8 @@ class DetailScreen extends StatelessWidget {
     if (done == true) {
       await Repo.instance.setActive(sub, false);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Hemat ${rupiah(sub.yearlyCost)} per tahun. Mantap!')));
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Hemat ${rupiah(sub.yearlyCost)} per tahun. Mantap!')));
       }
     }
   }
@@ -53,11 +57,20 @@ class DetailScreen extends StatelessWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Hapus ${sub.name}?'),
-        content: const Text('Data dan riwayat harga akan dihapus dari HP ini.'),
+        backgroundColor: AppColors.surface,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Text('Hapus ${sub.name}?', style: const TextStyle(fontWeight: FontWeight.w800)),
+        content: const Text('Data dan riwayat harga akan dihapus dari HP ini.',
+            style: TextStyle(color: AppColors.muted)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Hapus')),
+          FilledButton(
+            style: FilledButton.styleFrom(
+                backgroundColor: AppColors.coral, foregroundColor: AppColors.onLime),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Hapus'),
+          ),
         ],
       ),
     );
@@ -73,23 +86,33 @@ class DetailScreen extends StatelessWidget {
     return ListenableBuilder(
       listenable: repo,
       builder: (context, _) {
-        final cs = Theme.of(context).colorScheme;
-        final tt = Theme.of(context).textTheme;
         final saving = repo.annualSaving(sub);
-        Widget row(String k, String v) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              child: Row(children: [
-                Expanded(child: Text(k, style: TextStyle(color: cs.onSurfaceVariant))),
-                Flexible(
-                    child: Text(v,
-                        textAlign: TextAlign.right,
-                        style: const TextStyle(fontWeight: FontWeight.w600))),
-              ]),
+        final history = sub.history.reversed.toList();
+
+        Widget info(String label, String value, {Color? color}) => Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.line),
+                ),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 12.5)),
+                  const SizedBox(height: 4),
+                  Text(value,
+                      maxLines: 2,
+                      style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14.5,
+                          color: color ?? AppColors.text,
+                          fontFeatures: kTabular)),
+                ]),
+              ),
             );
 
         return Scaffold(
           appBar: AppBar(
-            title: Text(sub.name),
             actions: [
               IconButton(
                 tooltip: 'Edit',
@@ -99,85 +122,173 @@ class DetailScreen extends StatelessWidget {
               ),
               IconButton(
                   tooltip: 'Hapus',
-                  icon: const Icon(Icons.delete_outline),
+                  icon: const Icon(Icons.delete_outline_rounded),
                   onPressed: () => _delete(context)),
+              const SizedBox(width: 4),
             ],
           ),
           body: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 40),
             children: [
-              Row(children: [
-                SubAvatar(name: sub.name, color: sub.color, size: 56),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(rupiah(sub.amount),
-                        style: tt.headlineSmall?.copyWith(fontWeight: FontWeight.w800)),
-                    Text('${sub.cycle.label} · ${sub.category}',
-                        style: TextStyle(color: cs.onSurfaceVariant)),
+              // ---------- Hero ----------
+              Center(child: SubAvatar(name: sub.name, color: sub.color, size: 76)),
+              const SizedBox(height: 14),
+              Center(
+                child: Text(sub.name,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
+              ),
+              const SizedBox(height: 6),
+              Center(
+                child: Text.rich(
+                  TextSpan(children: [
+                    TextSpan(
+                        text: rupiah(sub.amount),
+                        style: const TextStyle(
+                            fontSize: 34,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -1,
+                            fontFeatures: kTabular)),
+                    TextSpan(
+                        text: ' ${sub.cycle.perLabel}',
+                        style: const TextStyle(fontSize: 16, color: AppColors.muted)),
                   ]),
                 ),
-              ]),
-              const SizedBox(height: 16),
-              AppCard(
-                child: Column(children: [
-                  row('Status', sub.active ? 'Aktif' : 'Nonaktif'),
-                  if (sub.active)
-                    row('Jatuh tempo', '${tanggal(sub.nextDue)} (${sisaHari(sub.nextDue)})'),
-                  row('Metode bayar', sub.paymentMethod),
-                  row('Setara per bulan', rupiah(sub.monthlyCost)),
-                  row('Setara per tahun', rupiah(sub.yearlyCost)),
-                  if (sub.sharedWith > 1)
-                    row('Bagian saya (÷${sub.sharedWith})', '${rupiah(sub.myMonthlyCost)}/bln'),
-                  row('Frekuensi pemakaian', sub.usage.label),
-                  if (sub.note.isNotEmpty) row('Catatan', sub.note),
-                ]),
               ),
+              const SizedBox(height: 12),
+              Wrap(alignment: WrapAlignment.center, spacing: 8, runSpacing: 8, children: [
+                if (sub.active) Pill.due(sub.nextDue)
+                else const Pill('Nonaktif', fg: AppColors.faint, bg: AppColors.surface3),
+                Pill(sub.category, fg: AppColors.text, bg: AppColors.surface3),
+                if (sub.sharedWith > 1)
+                  Pill('Dibagi ${sub.sharedWith} orang',
+                      fg: AppColors.sky, bg: AppColors.sky.withAlpha(30), icon: Icons.group_rounded),
+              ]),
+              const SizedBox(height: 24),
+
+              // ---------- Info ----------
+              Row(children: [
+                info('Tagihan berikutnya', sub.active ? tanggal(sub.nextDue) : '—'),
+                const SizedBox(width: 10),
+                info('Bayar via', sub.paymentMethod),
+              ]),
+              const SizedBox(height: 10),
+              Row(children: [
+                info('Setara per bulan',
+                    sub.sharedWith > 1 ? '${rupiah(sub.myMonthlyCost)} (bagian Anda)' : rupiah(sub.monthlyCost)),
+                const SizedBox(width: 10),
+                info('Setara per tahun', rupiah(sub.yearlyCost)),
+              ]),
+              const SizedBox(height: 10),
+              Row(children: [
+                info('Frekuensi pemakaian', sub.usage.label,
+                    color: sub.usage == Usage.rarely ? AppColors.amber : null),
+                const SizedBox(width: 10),
+                info('Siklus', sub.cycle.label),
+              ]),
+              if (sub.note.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Row(children: [info('Catatan', sub.note)]),
+              ],
+
               if (saving > 0) ...[
-                const SizedBox(height: 12),
+                const SizedBox(height: 14),
                 AppCard(
-                  color: cs.tertiaryContainer,
-                  child: Text(
-                    'Pindah ke paket tahunan bisa hemat sekitar ${rupiah(saving)} per tahun.',
-                    style: TextStyle(color: cs.onTertiaryContainer),
-                  ),
+                  color: AppColors.limeDeep,
+                  borderColor: AppColors.lime.withAlpha(60),
+                  child: Row(children: [
+                    const Icon(Icons.savings_rounded, color: AppColors.lime),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Pindah ke paket tahunan bisa hemat sekitar ${rupiah(saving)} per tahun.',
+                        style: const TextStyle(color: AppColors.lime, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ]),
                 ),
               ],
+
+              // ---------- Riwayat harga ----------
               const SectionTitle('Riwayat harga'),
               AppCard(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 child: Column(children: [
-                  for (final h in sub.history.reversed)
-                    row(tanggal(h.date), rupiah(h.amount)),
+                  for (var i = 0; i < history.length; i++) ...[
+                    if (i > 0) const Divider(),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Row(children: [
+                        Expanded(
+                            child: Text(tanggal(history[i].date),
+                                style: const TextStyle(color: AppColors.muted))),
+                        if (i + 1 < history.length &&
+                            history[i].amount != history[i + 1].amount) ...[
+                          _ChangeBadge(
+                              from: history[i + 1].amount, to: history[i].amount),
+                          const SizedBox(width: 10),
+                        ],
+                        Text(rupiah(history[i].amount),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w700, fontFeatures: kTabular)),
+                      ]),
+                    ),
+                  ],
                 ]),
               ),
-              const SizedBox(height: 24),
-              if (sub.active)
-                FilledButton.icon(
-                  style: FilledButton.styleFrom(
-                      backgroundColor: cs.error, foregroundColor: cs.onError),
-                  onPressed: () => _cancel(context),
-                  icon: const Icon(Icons.cancel_outlined),
-                  label: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Text('Batalkan langganan'),
+              const SizedBox(height: 28),
+
+              // ---------- Aksi ----------
+              if (sub.active) ...[
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.coral,
+                      side: BorderSide(color: AppColors.coral.withAlpha(140)),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    onPressed: () => _cancel(context),
+                    icon: const Icon(Icons.block_rounded),
+                    label: const Text('Batalkan langganan',
+                        style: TextStyle(fontWeight: FontWeight.w700)),
                   ),
-                )
-              else
-                OutlinedButton.icon(
-                  onPressed: () => repo.setActive(sub, true),
-                  icon: const Icon(Icons.restart_alt),
-                  label: const Text('Aktifkan lagi'),
                 ),
-              const SizedBox(height: 8),
-              Text(
-                'Tombol batalkan membuka halaman pengelolaan langganan resmi layanan tersebut.',
-                textAlign: TextAlign.center,
-                style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-              ),
+                const SizedBox(height: 10),
+                const Text(
+                  'Membuka halaman pengelolaan langganan resmi layanan ini.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.faint, fontSize: 12.5),
+                ),
+              ] else
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: () => repo.setActive(sub, true),
+                    icon: const Icon(Icons.restart_alt_rounded),
+                    label: const Text('Aktifkan lagi'),
+                  ),
+                ),
             ],
           ),
         );
       },
     );
+  }
+}
+
+class _ChangeBadge extends StatelessWidget {
+  final double from;
+  final double to;
+  const _ChangeBadge({required this.from, required this.to});
+
+  @override
+  Widget build(BuildContext context) {
+    final up = to > from;
+    final pct = from == 0 ? 0 : ((to - from) / from * 100).abs().round();
+    return Pill('${up ? '+' : '−'}$pct%',
+        fg: up ? AppColors.coral : AppColors.lime,
+        bg: up ? AppColors.coralDeep : AppColors.limeDeep,
+        icon: up ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded);
   }
 }

@@ -27,8 +27,7 @@ class SettingsScreen extends StatelessWidget {
         content: TextField(
           controller: ctrl,
           maxLines: 8,
-          decoration: const InputDecoration(
-              border: OutlineInputBorder(), hintText: 'Tempel data cadangan (JSON)'),
+          decoration: inputDeco('Data cadangan', hint: 'Tempel data cadangan (JSON)'),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
@@ -76,7 +75,7 @@ class SettingsScreen extends StatelessWidget {
         return Scaffold(
           appBar: AppBar(title: const Text('Setelan')),
           body: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 40),
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 40),
             children: [
               const SectionTitle('Pengingat'),
               AppCard(

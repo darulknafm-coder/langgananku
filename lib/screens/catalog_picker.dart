@@ -27,16 +27,11 @@ class _CatalogPickerState extends State<CatalogPicker> {
     return Scaffold(
       appBar: AppBar(title: const Text('Katalog layanan')),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 32),
         children: [
           TextField(
             autofocus: false,
-            decoration: const InputDecoration(
-              prefixIcon: Icon(Icons.search),
-              hintText: 'Cari: Netflix, AI, VPN…',
-              border: OutlineInputBorder(),
-              isDense: true,
-            ),
+            decoration: searchDeco('Cari: Netflix, AI, VPN…'),
             onChanged: (v) => setState(() => _q = v),
           ),
           for (final cat in kCategories)

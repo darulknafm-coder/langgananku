@@ -52,7 +52,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
                       textAlign: TextAlign.center),
                 ))
               : ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 40),
+                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 40),
                   children: [
                     // ---------- Simulasi ----------
                     const SectionTitle('Simulasi: berapa hemat kalau berhenti?'),
@@ -84,19 +84,19 @@ class _SavingsScreenState extends State<SavingsScreen> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                              color: cs.primaryContainer,
-                              borderRadius: BorderRadius.circular(12)),
+                              color: cs.primary,
+                              borderRadius: BorderRadius.circular(16)),
                           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                             Text('Uang yang bisa dihemat',
-                                style: TextStyle(color: cs.onPrimaryContainer)),
+                                style: TextStyle(color: cs.onPrimary)),
                             Text(rupiah(simTotal),
                                 style: tt.headlineSmall?.copyWith(
-                                    color: cs.onPrimaryContainer, fontWeight: FontWeight.w800)),
+                                    color: cs.onPrimary, fontWeight: FontWeight.w800)),
                             if (stopMonthly > 0)
                               Text(
                                 'Pengeluaran bulanan turun dari ${rupiah(repo.monthlyTotal)} '
                                 'menjadi ${rupiah(repo.monthlyTotal - stopMonthly)}.',
-                                style: TextStyle(color: cs.onPrimaryContainer),
+                                style: TextStyle(color: cs.onPrimary),
                               ),
                           ]),
                         ),
