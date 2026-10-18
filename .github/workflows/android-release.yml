@@ -75,7 +75,7 @@ jobs:
           set -o pipefail
           report() {
             # Tampilkan ringkasan error sebagai anotasi (terlihat di halaman ringkasan run).
-            msg=$(grep -iE "error|what went wrong|failed|exception|> " build.log | grep -v "^\s*$" | tail -40 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+            msg=$( (grep -A12 "What went wrong" build.log; grep -iE "error:" build.log) | grep -v "^\s*$" | tail -45 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
             echo "::error title=Build gagal::${msg}"
             exit 1
           }
