@@ -10,6 +10,14 @@ extension BillingCycleX on BillingCycle {
         BillingCycle.yearly => 'Tahunan',
       };
 
+  /// "Bulan", "Tahun", … untuk teks "Bayar setiap …".
+  String get everyLabel => switch (this) {
+        BillingCycle.weekly => 'Minggu',
+        BillingCycle.monthly => 'Bulan',
+        BillingCycle.quarterly => '3 bulan',
+        BillingCycle.yearly => 'Tahun',
+      };
+
   String get perLabel => switch (this) {
         BillingCycle.weekly => '/mgg',
         BillingCycle.monthly => '/bln',

@@ -82,7 +82,7 @@ class OnboardingScreen extends StatelessWidget {
               child: FilledButton(
                 onPressed: () => _start(context, scan: true),
                 style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 18)),
-                child: const Text('Mulai & pindai tagihan'),
+                child: const Text('Mulai & tempel nota tagihan'),
               ),
             ),
             const SizedBox(height: 8),

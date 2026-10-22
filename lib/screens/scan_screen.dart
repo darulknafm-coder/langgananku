@@ -96,7 +96,7 @@ class _ScanScreenState extends State<ScanScreen> {
     final cs = Theme.of(context).colorScheme;
     final results = _results;
     return Scaffold(
-      appBar: AppBar(title: const Text('Deteksi otomatis')),
+      appBar: AppBar(title: const Text('Tempel email / SMS tagihan')),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 4, 20, 120),
         children: [
@@ -114,7 +114,7 @@ class _ScanScreenState extends State<ScanScreen> {
             ]),
           ),
           if (SmsScanner.supported) ...[
-            const SectionTitle('1. Pindai SMS bank & e-wallet'),
+            const SectionTitle('1. Baca SMS bank & e-wallet'),
             FilledButton.icon(
               onPressed: _busy ? null : _scanSms,
               icon: _busy
@@ -123,7 +123,7 @@ class _ScanScreenState extends State<ScanScreen> {
                   : const Icon(Icons.sms_outlined),
               label: const Padding(
                 padding: EdgeInsets.symmetric(vertical: 12),
-                child: Text('Pindai SMS 12 bulan terakhir'),
+                child: Text('Baca SMS 12 bulan terakhir'),
               ),
             ),
           ],

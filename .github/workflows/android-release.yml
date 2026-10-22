@@ -82,7 +82,7 @@ jobs:
           set -o pipefail
           report() {
             # Tampilkan ringkasan error sebagai anotasi (terlihat di halaman ringkasan run).
-            msg=$( (grep -A12 "What went wrong" build.log; grep -iE "error:" build.log) | grep -v "^\s*$" | tail -45 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+            msg=$( (grep -E "\.dart:[0-9]+:[0-9]+: Error" -A2 build.log | head -40; grep -A12 "What went wrong" build.log) | grep -v "^\s*$" | head -60 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
             echo "::error title=Build gagal::${msg}"
             exit 1
           }

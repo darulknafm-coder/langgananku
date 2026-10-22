@@ -264,14 +264,14 @@ class DetailScreen extends StatelessWidget {
                 else Pill('Nonaktif', fg: AppColors.faint, bg: AppColors.surface3),
                 Pill(sub.category, fg: AppColors.text, bg: AppColors.surface3),
                 if (sub.sharedWith > 1)
-                  Pill('Dibagi ${sub.sharedWith} orang',
+                  Pill('Patungan ${sub.sharedWith} orang',
                       fg: AppColors.sky, bg: AppColors.sky.withAlpha(30), icon: Icons.group_rounded),
               ]),
               const SizedBox(height: 24),
 
               // ---------- Info ----------
               Row(children: [
-                info(sub.onTrial ? 'Trial berakhir' : 'Tagihan berikutnya', sub.active ? tanggal(sub.nextDue) : '—'),
+                info(sub.onTrial ? 'Gratis sampai' : 'Bayar berikutnya', sub.active ? tanggal(sub.nextDue) : '—'),
                 const SizedBox(width: 10),
                 info('Bayar via', sub.paymentMethod),
               ]),
@@ -284,10 +284,10 @@ class DetailScreen extends StatelessWidget {
               ]),
               const SizedBox(height: 10),
               Row(children: [
-                info('Frekuensi pemakaian', sub.usage.label,
+                info('Seberapa sering dipakai', sub.usage.label,
                     color: sub.usage == Usage.rarely ? AppColors.amber : null),
                 const SizedBox(width: 10),
-                info('Siklus', sub.cycle.label),
+                info('Bayar setiap', sub.cycle.everyLabel),
               ]),
               if (sub.note.isNotEmpty) ...[
                 const SizedBox(height: 10),
@@ -321,7 +321,7 @@ class DetailScreen extends StatelessWidget {
                     style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 15)),
                     onPressed: () => _markPaid(context),
                     icon: const Icon(Icons.check_circle_rounded),
-                    label: Text('Tandai sudah dibayar · ${tanggalPendek(sub.nextDue)}',
+                    label: Text('Saya sudah bayar · ${tanggalPendek(sub.nextDue)}',
                         style: const TextStyle(fontWeight: FontWeight.w700)),
                   ),
                 ),

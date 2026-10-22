@@ -381,7 +381,7 @@ InputDecoration inputDeco(String label, {String? hint, String? prefix, String? h
         borderSide: BorderSide(color: c, width: w),
       );
   return InputDecoration(
-    labelText: label,
+    labelText: label.isEmpty ? null : label,
     hintText: hint,
     prefixText: prefix,
     helperText: helper,

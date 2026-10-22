@@ -101,7 +101,7 @@ class DashboardScreen extends StatelessWidget {
                                   fontWeight: FontWeight.w700, color: AppColors.text)),
                           const SizedBox(height: 2),
                           Text('${a.oldLabel} → ${a.newLabel}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                   color: AppColors.coral,
                                   fontSize: 13,
                                   fontFeatures: kTabular)),
@@ -191,11 +191,11 @@ class DashboardScreen extends StatelessWidget {
                   ],
 
                   // ---------- Komposisi ----------
-                  const SectionTitle('Komposisi pengeluaran'),
+                  const SectionTitle('Pengeluaran per jenis layanan'),
                   _CategoryCard(data: repo.byCategory(), total: repo.monthlyTotal),
                   const SizedBox(height: 12),
                   Text(
-                    'Tagihan tahunan dihitung per bulan; langganan bersama dibagi jumlah anggota.',
+                    'Langganan tahunan dihitung per bulan. Langganan patungan dihitung bagian Anda saja.',
                     style: TextStyle(color: AppColors.faint, fontSize: 12),
                   ),
                 ],
@@ -531,7 +531,7 @@ class _EmptyState extends StatelessWidget {
         const Text('Belum ada langganan',
             style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
         const SizedBox(height: 6),
-        Text('Ketuk layanan yang Anda pakai, atau pindai nota tagihan.',
+        Text('Ketuk layanan yang Anda pakai untuk mulai mencatat.',
             textAlign: TextAlign.center, style: TextStyle(color: AppColors.muted)),
         const SizedBox(height: 18),
         Wrap(
@@ -559,9 +559,9 @@ class _EmptyState extends StatelessWidget {
           width: double.infinity,
           child: FilledButton.icon(
             onPressed: () => Navigator.of(context)
-                .push(MaterialPageRoute(builder: (_) => const ScanScreen())),
-            icon: const Icon(Icons.document_scanner_rounded),
-            label: const Text('Pindai tagihan'),
+                .push(MaterialPageRoute(builder: (_) => const CatalogPicker())),
+            icon: const Icon(Icons.add_rounded),
+            label: const Text('Tambah langganan'),
           ),
         ),
         const SizedBox(height: 10),
@@ -569,9 +569,9 @@ class _EmptyState extends StatelessWidget {
           width: double.infinity,
           child: OutlinedButton.icon(
             onPressed: () => Navigator.of(context)
-                .push(MaterialPageRoute(builder: (_) => const CatalogPicker())),
-            icon: const Icon(Icons.grid_view_rounded),
-            label: const Text('Pilih dari katalog'),
+                .push(MaterialPageRoute(builder: (_) => const ScanScreen())),
+            icon: const Icon(Icons.content_paste_rounded),
+            label: const Text('Tempel email / SMS tagihan'),
           ),
         ),
       ]),

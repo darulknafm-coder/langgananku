@@ -165,7 +165,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
 
                     // ---------- Mode keluarga ----------
                     if (shared.isNotEmpty) ...[
-                      const SectionTitle('Langganan bersama (mode keluarga)'),
+                      const SectionTitle('Langganan patungan'),
                       AppCard(
                         padding: const EdgeInsets.symmetric(vertical: 4),
                         child: Column(children: [

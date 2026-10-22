@@ -16,13 +16,15 @@ class EditScreen extends StatefulWidget {
   final double? initialAmount;
   final String? initialCurrency;
   final BillingCycle? initialCycle;
+  final String? initialName;
   const EditScreen(
       {super.key,
       this.existing,
       this.fromCatalog,
       this.initialAmount,
       this.initialCurrency,
-      this.initialCycle});
+      this.initialCycle,
+      this.initialName});
 
   @override
   State<EditScreen> createState() => _EditScreenState();
@@ -52,7 +54,7 @@ class _EditScreenState extends State<EditScreen> {
     super.initState();
     final e = widget.existing;
     final c = widget.fromCatalog;
-    _name = TextEditingController(text: e?.name ?? c?.name ?? '');
+    _name = TextEditingController(text: e?.name ?? c?.name ?? widget.initialName ?? '');
     _currency = widget.initialCurrency ?? e?.currency ?? c?.currency ?? 'IDR';
     _trial = e?.onTrial ?? false;
     _reminders = {...(e?.reminderDays ?? const [3, 1])};
@@ -158,7 +160,15 @@ class _EditScreenState extends State<EditScreen> {
       }
       await repo.update(e, newAmount: amount);
     }
-    if (mounted) Navigator.of(context).pop();
+    if (!mounted) return;
+    if (widget.existing == null) {
+      // Langganan baru: kembali ke layar utama dan beri konfirmasi.
+      final messenger = ScaffoldMessenger.of(context);
+      Navigator.of(context).popUntil((r) => r.isFirst);
+      messenger.showSnackBar(SnackBar(content: Text('${_name.text.trim()} ditambahkan.')));
+    } else {
+      Navigator.of(context).pop();
+    }
   }
 
   String _usdHelper() {
@@ -168,190 +178,272 @@ class _EditScreenState extends State<EditScreen> {
     return '≈ ${rupiah(n * rate)} · kurs ${rupiah(rate)}/US\$';
   }
 
+  Widget _label(String text, {String? help}) => Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(text, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+          if (help != null) ...[
+            const SizedBox(height: 2),
+            Text(help, style: TextStyle(color: AppColors.muted, fontSize: 12.5)),
+          ],
+        ]),
+      );
+
+  Widget _choice<T>(List<(T, String)> items, T value, ValueChanged<T> onPick) => Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          for (final (v, l) in items)
+            ChoiceChip(
+              label: Text(l),
+              selected: v == value,
+              showCheckmark: false,
+              onSelected: (_) => setState(() => onPick(v)),
+            ),
+        ],
+      );
+
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.existing != null;
-    const gap = SizedBox(height: 14);
+    final c = widget.fromCatalog;
+    final showNameField = c == null || isEdit;
+    const gap = SizedBox(height: 22);
+
+    final essentials = <Widget>[
+      // ---------- Layanan ----------
+      if (c != null && !isEdit)
+        AppCard(
+          padding: const EdgeInsets.all(14),
+          child: Row(children: [
+            SubAvatar(logoKey: c.key, name: c.name, color: c.color, size: 44),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(c.name, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+                Text(c.category, style: TextStyle(color: AppColors.muted, fontSize: 13)),
+              ]),
+            ),
+            TextButton(
+                onPressed: () => Navigator.of(context).pop(), child: const Text('Ganti')),
+          ]),
+        ),
+      if (showNameField) ...[
+        _label('Nama layanan'),
+        TextFormField(
+          controller: _name,
+          decoration: inputDeco('Contoh: Netflix, Wifi rumah, Gym'),
+          textCapitalization: TextCapitalization.words,
+          validator: (v) => (v == null || v.trim().isEmpty) ? 'Nama wajib diisi' : null,
+        ),
+      ],
+      gap,
+
+      // ---------- Harga ----------
+      _label('Harga',
+          help: c != null && !isEdit
+              ? 'Sudah diisi harga umum. Sesuaikan dengan tagihan Anda.'
+              : 'Jumlah yang ditagih setiap kali bayar.'),
+      Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Expanded(
+          child: TextFormField(
+            controller: _amount,
+            decoration: inputDeco('Harga',
+                prefix: _currency == 'USD' ? 'US\$ ' : 'Rp ',
+                helper: _currency == 'USD' ? _usdHelper() : null),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            onChanged: (_) {
+              if (_currency == 'USD') setState(() {});
+            },
+            validator: (v) {
+              final n = _parseAmount(v ?? '');
+              return (n == null || n <= 0) ? 'Isi harga, contoh 65000' : null;
+            },
+          ),
+        ),
+        const SizedBox(width: 10),
+        Padding(
+          padding: const EdgeInsets.only(top: 6),
+          child: SegmentedButton<String>(
+            showSelectedIcon: false,
+            style: const ButtonStyle(visualDensity: VisualDensity.compact),
+            segments: const [
+              ButtonSegment(value: 'IDR', label: Text('Rp')),
+              ButtonSegment(value: 'USD', label: Text('US\$')),
+            ],
+            selected: {_currency},
+            onSelectionChanged: (v) => setState(() => _currency = v.first),
+          ),
+        ),
+      ]),
+      gap,
+
+      // ---------- Bayar setiap ----------
+      _label('Bayar setiap'),
+      _choice<BillingCycle>([
+        (BillingCycle.monthly, 'Bulan'),
+        (BillingCycle.yearly, 'Tahun'),
+        (BillingCycle.quarterly, '3 bulan'),
+        (BillingCycle.weekly, 'Minggu'),
+      ], _cycle, (v) => _cycle = v),
+      gap,
+
+      // ---------- Tanggal ----------
+      _label(_trial ? 'Masa gratis berakhir' : 'Tanggal bayar berikutnya',
+          help: _trial
+              ? 'Hari pertama Anda akan ditagih. Kami ingatkan sebelum tanggal ini.'
+              : 'Lihat di email atau struk terakhir. Bisa diubah kapan saja.'),
+      InkWell(
+        onTap: _pickDate,
+        borderRadius: BorderRadius.circular(14),
+        child: InputDecorator(
+          decoration: inputDeco(''),
+          child: Row(children: [
+            Icon(Icons.event_rounded, color: AppColors.accentText, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+                child: Text(tanggal(_due),
+                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15.5))),
+            Text(sisaHari(_due), style: TextStyle(color: AppColors.muted, fontSize: 13)),
+          ]),
+        ),
+      ),
+      const SizedBox(height: 10),
+      SwitchListTile(
+        contentPadding: EdgeInsets.zero,
+        title: const Text('Masih gratis (masa percobaan)'),
+        subtitle: const Text('Aktifkan bila belum pernah bayar'),
+        value: _trial,
+        onChanged: (v) => setState(() => _trial = v),
+      ),
+    ];
+
+    final extras = <Widget>[
+      _label('Ingatkan saya', help: 'Notifikasi sebelum tanggal bayar.'),
+      Wrap(spacing: 8, runSpacing: 8, children: [
+        for (final d in kReminderChoices)
+          FilterChip(
+            label: Text(d == 0 ? 'Di hari bayar' : '$d hari sebelum'),
+            selected: _reminders.contains(d),
+            showCheckmark: false,
+            onSelected: (v) => setState(() => v ? _reminders.add(d) : _reminders.remove(d)),
+          ),
+      ]),
+      gap,
+      _label('Bayar pakai'),
+      DropdownButtonFormField<String>(
+        value: _payment,
+        decoration: inputDeco(''),
+        items: [for (final p in kPaymentMethods) DropdownMenuItem(value: p, child: Text(p))],
+        onChanged: (v) => setState(() => _payment = v ?? _payment),
+      ),
+      gap,
+      _label('Jenis layanan'),
+      DropdownButtonFormField<String>(
+        value: _category,
+        decoration: inputDeco(''),
+        items: [for (final k in kCategories) DropdownMenuItem(value: k, child: Text(k))],
+        onChanged: (v) => setState(() => _category = v ?? _category),
+      ),
+      gap,
+      _label('Seberapa sering Anda pakai?',
+          help: 'Dipakai untuk saran hemat. Yang jarang dipakai akan kami tandai.'),
+      _choice<Usage>([
+        (Usage.often, 'Sering'),
+        (Usage.sometimes, 'Kadang-kadang'),
+        (Usage.rarely, 'Jarang'),
+      ], _usage, (v) => _usage = v),
+      gap,
+      _label('Dipakai bareng berapa orang?',
+          help: 'Misalnya Netflix patungan bertiga. Biaya Anda dihitung per orang.'),
+      Row(children: [
+        IconButton.outlined(
+          onPressed: _shared > 1 ? () => setState(() => _shared--) : null,
+          icon: const Icon(Icons.remove_rounded),
+        ),
+        Expanded(
+          child: Text(_shared == 1 ? 'Sendiri' : '$_shared orang',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+        ),
+        IconButton.outlined(
+          onPressed: _shared < 12 ? () => setState(() => _shared++) : null,
+          icon: const Icon(Icons.add_rounded),
+        ),
+      ]),
+      gap,
+      if (!showNameField) ...[
+        _label('Nama layanan'),
+        TextFormField(
+          controller: _name,
+          decoration: inputDeco(''),
+          textCapitalization: TextCapitalization.words,
+          validator: (v) => (v == null || v.trim().isEmpty) ? 'Nama wajib diisi' : null,
+        ),
+        gap,
+      ],
+      _label('Catatan'),
+      TextFormField(
+        controller: _note,
+        decoration: inputDeco('', hint: 'Contoh: akun bersama keluarga'),
+        maxLines: 2,
+      ),
+      gap,
+      _label('Link untuk berhenti langganan',
+          help: 'Dipakai tombol "Batalkan langganan". Boleh dikosongkan.'),
+      TextFormField(
+        controller: _url,
+        decoration: inputDeco('', hint: 'https://…'),
+        keyboardType: TextInputType.url,
+      ),
+      if (isEdit)
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Masih berlangganan'),
+          subtitle: const Text('Matikan bila sudah berhenti; tidak dihitung lagi'),
+          value: _active,
+          onChanged: (v) => setState(() => _active = v),
+        ),
+    ];
+
     return Scaffold(
-      appBar: AppBar(title: Text(isEdit ? 'Edit langganan' : 'Tambah langganan')),
+      appBar: AppBar(title: Text(isEdit ? 'Ubah langganan' : 'Tambah langganan')),
       body: Form(
         key: _form,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
           children: [
-            if (widget.fromCatalog != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 14),
-                child: Text(
-                  'Harga dari katalog adalah perkiraan. Sesuaikan dengan tagihan Anda.',
-                  style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
-                ),
-              ),
-            TextFormField(
-              controller: _name,
-              decoration: inputDeco('Nama layanan', hint: 'mis. Netflix'),
-              textCapitalization: TextCapitalization.words,
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Wajib diisi' : null,
-            ),
-            gap,
-            Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Expanded(
-                child: TextFormField(
-                  controller: _amount,
-                  decoration: inputDeco('Nominal per tagihan',
-                      prefix: _currency == 'USD' ? 'US\$ ' : 'Rp ',
-                      helper: _currency == 'USD' ? _usdHelper() : null),
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  onChanged: (_) {
-                    if (_currency == 'USD') setState(() {});
-                  },
-                  validator: (v) {
-                    final n = _parseAmount(v ?? '');
-                    return (n == null || n <= 0) ? 'Isi nominal yang valid' : null;
-                  },
-                ),
-              ),
-              const SizedBox(width: 10),
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: SegmentedButton<String>(
-                  showSelectedIcon: false,
-                  style: const ButtonStyle(visualDensity: VisualDensity.compact),
-                  segments: const [
-                    ButtonSegment(value: 'IDR', label: Text('Rp')),
-                    ButtonSegment(value: 'USD', label: Text('US\$')),
-                  ],
-                  selected: {_currency},
-                  onSelectionChanged: (v) => setState(() => _currency = v.first),
-                ),
-              ),
-            ]),
-            gap,
+            ...essentials,
+            const SizedBox(height: 8),
             AppCard(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: SwitchListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                secondary: const Icon(Icons.hourglass_top_rounded),
-                title: const Text('Sedang masa trial gratis'),
-                subtitle: const Text('Diingatkan H-3, H-1, dan di hari terakhir trial'),
-                value: _trial,
-                onChanged: (v) => setState(() => _trial = v),
-              ),
-            ),
-            gap,
-            const Text('Siklus tagihan'),
-            const SizedBox(height: 6),
-            SegmentedButton<BillingCycle>(
-              showSelectedIcon: false,
-              segments: const [
-                ButtonSegment(value: BillingCycle.weekly, label: Text('Mgg')),
-                ButtonSegment(value: BillingCycle.monthly, label: Text('Bln')),
-                ButtonSegment(value: BillingCycle.quarterly, label: Text('3 Bln')),
-                ButtonSegment(value: BillingCycle.yearly, label: Text('Thn')),
-              ],
-              selected: {_cycle},
-              onSelectionChanged: (v) => setState(() => _cycle = v.first),
-            ),
-            gap,
-            InkWell(
-              onTap: _pickDate,
-              child: InputDecorator(
-                decoration: inputDeco(_trial
-                    ? 'Trial gratis berakhir (tagihan pertama)'
-                    : 'Tagihan berikutnya'),
-                child: Row(children: [
-                  Expanded(child: Text(tanggal(_due))),
-                  const Icon(Icons.calendar_today_outlined, size: 18),
-                ]),
-              ),
-            ),
-            gap,
-            DropdownButtonFormField<String>(
-              value: _category,
-              decoration: inputDeco('Kategori'),
-              items: [for (final c in kCategories) DropdownMenuItem(value: c, child: Text(c))],
-              onChanged: (v) => setState(() => _category = v ?? _category),
-            ),
-            gap,
-            DropdownButtonFormField<String>(
-              value: _payment,
-              decoration: inputDeco('Metode pembayaran'),
-              items: [for (final p in kPaymentMethods) DropdownMenuItem(value: p, child: Text(p))],
-              onChanged: (v) => setState(() => _payment = v ?? _payment),
-            ),
-            gap,
-            const Text('Ingatkan saya'),
-            const SizedBox(height: 6),
-            Wrap(spacing: 8, runSpacing: 8, children: [
-              for (final d in kReminderChoices)
-                FilterChip(
-                  label: Text(reminderLabel(d)),
-                  selected: _reminders.contains(d),
-                  showCheckmark: false,
-                  onSelected: (v) => setState(() => v ? _reminders.add(d) : _reminders.remove(d)),
-                ),
-            ]),
-            if (_reminders.isEmpty)
-              Padding(
-                padding: EdgeInsets.only(top: 6),
-                child: Text('Tanpa pengingat untuk langganan ini.',
-                    style: TextStyle(fontSize: 12.5, color: AppColors.muted)),
-              ),
-            gap,
-            const Text('Seberapa sering dipakai?'),
-            const SizedBox(height: 6),
-            SegmentedButton<Usage>(
-              showSelectedIcon: false,
-              segments: [
-                for (final u in Usage.values) ButtonSegment(value: u, label: Text(u.label)),
-              ],
-              selected: {_usage},
-              onSelectionChanged: (v) => setState(() => _usage = v.first),
-            ),
-            gap,
-            Row(children: [
-              const Expanded(
-                child: Text('Dibagi dengan (mode keluarga/patungan)'),
-              ),
-              IconButton(
-                onPressed: _shared > 1 ? () => setState(() => _shared--) : null,
-                icon: const Icon(Icons.remove_circle_outline),
-              ),
-              Text('$_shared orang', style: const TextStyle(fontWeight: FontWeight.w700)),
-              IconButton(
-                onPressed: _shared < 12 ? () => setState(() => _shared++) : null,
-                icon: const Icon(Icons.add_circle_outline),
-              ),
-            ]),
-            gap,
-            TextFormField(
-              controller: _url,
-              decoration: inputDeco('Link pembatalan (opsional)',
-                  helper: 'Dipakai tombol "Batalkan langganan"'),
-              keyboardType: TextInputType.url,
-            ),
-            gap,
-            TextFormField(
-              controller: _note,
-              decoration: inputDeco('Catatan (opsional)'),
-              maxLines: 2,
-            ),
-            if (isEdit)
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Langganan aktif'),
-                value: _active,
-                onChanged: (v) => setState(() => _active = v),
-              ),
-            const SizedBox(height: 20),
-            FilledButton(
-              onPressed: _save,
-              child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 14),
-                child: Text('Simpan'),
+              padding: EdgeInsets.zero,
+              child: ExpansionTile(
+                initiallyExpanded: isEdit,
+                tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                childrenPadding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                expandedCrossAxisAlignment: CrossAxisAlignment.start,
+                leading: const Icon(Icons.tune_rounded),
+                title: const Text('Pengaturan tambahan',
+                    style: TextStyle(fontWeight: FontWeight.w700)),
+                subtitle: Text('Opsional: pengingat, cara bayar, patungan, catatan',
+                    style: TextStyle(color: AppColors.muted, fontSize: 12.5)),
+                children: extras,
               ),
             ),
           ],
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+          child: FilledButton(
+            onPressed: _save,
+            child: const Padding(
+              padding: EdgeInsets.symmetric(vertical: 4),
+              child: Text('Simpan'),
+            ),
+          ),
         ),
       ),
     );
