@@ -6,69 +6,81 @@
 <title>Kebijakan Privasi LanggananKu</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap">
 <style>
-  :root{--bg:#0E0F12;--fg:#F2F4F7;--muted:#9AA3AF;--brand:#B8F34A;--card:#16181D;--line:#2A2E36;color-scheme:dark}
+  :root{--bg:#F5F7F7;--fg:#13201F;--muted:#5B6B6B;--brand:#087A76;--card:#FFFFFF;--line:#E1E8E8;color-scheme:light dark}
+  @media (prefers-color-scheme: dark){:root{--bg:#0D1213;--fg:#EDF3F3;--muted:#9AAAAA;--brand:#5EE6D3;--card:#151C1D;--line:#263133}}
   body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 'Plus Jakarta Sans',system-ui,-apple-system,"Segoe UI",sans-serif}
   main{max-width:720px;margin:0 auto;padding:32px 20px 64px}
   h1{font-size:28px;margin:0 0 4px}h2{font-size:19px;margin:32px 0 8px;color:var(--brand)}
   .muted{color:var(--muted)} a{color:var(--brand)} hr{border:0;border-top:1px solid var(--line);margin:40px 0}
   li{margin:4px 0}
+  table{border-collapse:collapse;width:100%;font-size:15px}td,th{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}th{background:var(--card)}
 </style>
 </head>
 <body>
 <main>
 <h1>Kebijakan Privasi LanggananKu</h1>
-<p class="muted">Berlaku sejak: 18 Oktober 2026</p>
+<p class="muted">Berlaku sejak: 22 Oktober 2026</p>
 
-<p>LanggananKu adalah aplikasi untuk mencatat dan memantau langganan berbayar. Kebijakan ini menjelaskan data apa yang diproses aplikasi dan bagaimana data itu diperlakukan.</p>
+<p>LanggananKu adalah aplikasi untuk mencatat dan memantau langganan berbayar. Kebijakan ini menjelaskan data apa yang dikumpulkan, untuk apa, di mana disimpan, dan bagaimana Anda bisa menghapusnya.</p>
 
 <h2>Ringkasan</h2>
 <ul>
-  <li>LanggananKu <strong>tidak mengumpulkan, mengirim, atau menjual</strong> data pribadi Anda.</li>
-  <li>Tidak ada akun, tidak ada server, tidak ada iklan, dan tidak ada pelacak/analitik pihak ketiga.</li>
-  <li>Semua data disimpan di perangkat Anda dan terhapus bila aplikasi dihapus.</li>
+  <li>Untuk memakai aplikasi, Anda membuat akun dengan <strong>nama, email, nomor HP, dan password</strong>.</li>
+  <li>Data langganan yang Anda catat disimpan di HP dan <strong>dicadangkan ke akun Anda</strong> agar tidak hilang saat ganti HP.</li>
+  <li>Kami <strong>tidak menjual</strong> data Anda, tidak menampilkan iklan, dan tidak memakai pelacak/analitik pihak ketiga.</li>
+  <li>Anda bisa <strong>menghapus akun beserta semua datanya</strong> kapan saja, dari aplikasi atau lewat <a href="hapus-akun.html">halaman hapus akun</a>.</li>
 </ul>
 
-<h2>Data yang diproses di perangkat</h2>
+<h2>Data yang kami kumpulkan</h2>
+<table>
+  <tr><th>Data</th><th>Untuk apa</th></tr>
+  <tr><td>Nama, email, nomor HP</td><td>Membuat dan mengelola akun, masuk ke aplikasi, mengirim email verifikasi dan atur ulang password. Nomor HP disimpan di profil Anda dan tidak dipakai untuk iklan atau dibagikan.</td></tr>
+  <tr><td>Password</td><td>Masuk ke akun. Password dikelola oleh Firebase Authentication dalam bentuk terenkripsi; kami tidak bisa melihatnya.</td></tr>
+  <tr><td>Data langganan: nama layanan, harga, tanggal tagihan, cara bayar, catatan, riwayat harga dan pembayaran, nama/nomor anggota patungan yang Anda isi</td><td>Menjalankan fitur aplikasi dan mencadangkannya ke akun Anda supaya bisa dipulihkan di HP lain.</td></tr>
+  <tr><td>Pengaturan aplikasi (jam pengingat, tema, batas anggaran, kurs)</td><td>Menyimpan preferensi Anda di akun.</td></tr>
+</table>
+<p>Kami <strong>tidak</strong> mengumpulkan lokasi, kontak, foto, atau data keuangan dari rekening Anda.</p>
+
+<h2>Di mana data disimpan</h2>
+<p>Akun dan cadangan data disimpan di layanan <strong>Google Firebase</strong> (Authentication dan Cloud Firestore) di pusat data Google, dengan koneksi terenkripsi (HTTPS/TLS). Aturan keamanan database memastikan hanya Anda yang dapat membaca dan mengubah data akun Anda. Google memproses data ini sebagai penyedia layanan sesuai <a href="https://firebase.google.com/support/privacy">ketentuan privasi Firebase</a>.</p>
+
+<h2>Data yang hanya diproses di HP</h2>
 <ul>
-  <li><strong>Data langganan</strong> yang Anda masukkan: nama layanan, nominal, siklus tagihan, tanggal jatuh tempo, metode pembayaran, dan catatan. Disimpan di penyimpanan lokal aplikasi.</li>
-  <li><strong>SMS (khusus Android, bila fitur pindai SMS tersedia dan Anda mengizinkan)</strong>: aplikasi membaca SMS kotak masuk untuk menemukan notifikasi transaksi langganan dari bank atau e-wallet. Pemindaian dilakukan sepenuhnya di perangkat. Isi SMS tidak disimpan dan tidak dikirim ke mana pun; yang disimpan hanya hasilnya (nama layanan, nominal, tanggal) setelah Anda menyetujuinya.</li>
-  <li><strong>Anggota patungan</strong> (opsional): nama dan nomor WhatsApp yang Anda isi sendiri, dipakai untuk membuka WhatsApp dengan pesan pengingat. Disimpan hanya di perangkat; pesan dikirim oleh Anda sendiri melalui WhatsApp.</li>
-  <li><strong>Kunci aplikasi</strong> (opsional): PIN disimpan di perangkat dalam bentuk hash, bukan angka aslinya. Sidik jari/Face ID diperiksa oleh sistem operasi; aplikasi tidak pernah menerima data biometrik Anda.</li>
-  <li><strong>Teks yang Anda tempel</strong> (email nota, struk): dianalisis di perangkat dengan cara yang sama dan tidak dikirim ke mana pun.</li>
+  <li><strong>SMS (khusus Android, bila fitur baca SMS tersedia dan Anda mengizinkan)</strong>: SMS dibaca di perangkat untuk menemukan transaksi langganan. Isi SMS tidak disimpan dan tidak dikirim ke mana pun; yang disimpan hanya hasilnya (nama layanan, harga, tanggal) setelah Anda menyetujuinya.</li>
+  <li><strong>Teks email/nota yang Anda tempel</strong>: dianalisis di perangkat dengan cara yang sama.</li>
+  <li><strong>PIN kunci aplikasi</strong>: disimpan di perangkat dalam bentuk hash. Sidik jari/Face ID diperiksa oleh sistem operasi; aplikasi tidak pernah menerima data biometrik Anda.</li>
+  <li><strong>Pengingat</strong>: dijadwalkan secara lokal di perangkat.</li>
 </ul>
 
-<h2>Koneksi internet</h2>
-<p>Aplikasi memakai internet hanya untuk dua hal, dan keduanya <strong>tidak mengirim data pribadi atau data langganan Anda</strong>:</p>
+<h2>Koneksi internet lain</h2>
 <ul>
-  <li><strong>Logo layanan</strong>: ikon resmi layanan di katalog (mis. netflix.com) diunduh melalui layanan ikon situs milik Google, dengan mengirim nama domain layanan tersebut. Logo disimpan di perangkat sehingga hanya diunduh sekali. Fitur ini bisa dimatikan di <em>Setelan → Tampilkan logo layanan</em>.</li>
-  <li><strong>Data paket &amp; promo</strong>: daftar harga paket dibaca dari file publik di situs ini (darulknafm-coder.github.io), yang di-hosting oleh GitHub.</li>
+  <li><strong>Logo layanan</strong>: ikon resmi layanan di katalog diunduh melalui layanan ikon situs milik Google dengan mengirim nama domain layanan (mis. netflix.com). Bisa dimatikan di <em>Setelan → Tampilkan logo layanan</em>.</li>
+  <li><strong>Daftar paket &amp; promo</strong>: dibaca dari file publik di situs ini (di-hosting oleh GitHub).</li>
 </ul>
-<p>Seperti semua koneksi internet, penyedia tersebut (Google dan GitHub) dapat menerima alamat IP perangkat Anda sesuai kebijakan privasi mereka.</p>
 
-<h2>Notifikasi</h2>
-<p>Pengingat jatuh tempo dijadwalkan secara lokal di perangkat. Tidak ada layanan notifikasi server yang dipakai.</p>
+<h2>Berbagi data</h2>
+<p>Kami tidak membagikan data Anda kepada pihak lain, kecuali kepada penyedia layanan di atas yang memprosesnya atas nama kami, atau bila diwajibkan oleh hukum. Pesan WhatsApp untuk anggota patungan dikirim oleh Anda sendiri melalui aplikasi WhatsApp.</p>
 
-<h2>Tautan ke layanan lain</h2>
-<p>Tombol "Batalkan langganan" membuka halaman resmi layanan terkait (mis. Netflix atau Google Play) di browser. Aktivitas Anda di situs tersebut tunduk pada kebijakan privasi masing-masing.</p>
-
-<h2>Cadangan data</h2>
-<p>Fitur cadangan menyimpan data Anda sebagai file di lokasi yang Anda pilih (mis. folder Download atau Google Drive), atau menyalinnya ke clipboard. Aplikasi tidak mengunggah file itu ke mana pun; ke mana file disimpan sepenuhnya keputusan Anda.</p>
-
-<h2>Penghapusan data</h2>
-<p>Anda dapat menghapus semua data kapan saja melalui <em>Setelan → Hapus semua data</em>, atau dengan menghapus aplikasi.</p>
+<h2>Penyimpanan &amp; penghapusan</h2>
+<ul>
+  <li>Data disimpan selama akun Anda aktif.</li>
+  <li><strong>Hapus akun dari aplikasi:</strong> <em>Setelan → Akun → Hapus akun</em>. Akun, profil, dan semua cadangan data langsung dihapus dari server dan dari HP.</li>
+  <li><strong>Tanpa aplikasi:</strong> ikuti petunjuk di <a href="hapus-akun.html">halaman hapus akun</a>. Permintaan diproses paling lambat 30 hari.</li>
+  <li><em>Setelan → Hapus semua data</em> menghapus data langganan tanpa menghapus akun.</li>
+</ul>
 
 <h2>Anak-anak</h2>
 <p>Aplikasi ini ditujukan untuk pengguna dewasa (18+) dan tidak ditujukan untuk anak-anak.</p>
 
 <h2>Perubahan kebijakan</h2>
-<p>Bila kebijakan ini berubah (misalnya saat fitur sinkronisasi atau akun ditambahkan), versi terbaru akan dipublikasikan di halaman ini beserta tanggal berlakunya.</p>
+<p>Bila kebijakan ini berubah, versi terbaru dipublikasikan di halaman ini beserta tanggal berlakunya.</p>
 
 <h2>Kontak</h2>
 <p>Pertanyaan tentang privasi: <a href="mailto:langgananku.app@gmail.com">langgananku.app@gmail.com</a></p>
 
 <hr>
 <h2 lang="en">Privacy Policy (English summary)</h2>
-<p lang="en">LanggananKu does not collect, transmit, sell, or share any personal data. There are no accounts, servers, ads, or third-party analytics. Subscription data you enter is stored only on your device. On Android, if you grant SMS access, inbox messages are scanned on the device to detect subscription charges; message content is never stored or sent anywhere. Pasted receipt text is processed on the device the same way. Reminders are scheduled locally. The app uses the internet only to download service logos (by sending the service's domain name to Google's site-icon service; can be turned off in Settings) and to read the public price/promo list from this website (hosted by GitHub); no personal or subscription data is sent. You can delete all data in Settings or by uninstalling the app. Contact: langgananku.app@gmail.com</p>
+<p lang="en">To use LanggananKu you create an account with your name, email, phone number and password (managed by Firebase Authentication). The subscriptions you record are stored on your device and backed up to your account in Google Cloud Firestore, encrypted in transit and readable only by you. We do not sell data, show ads, or use third-party analytics. SMS (Android, optional) and pasted receipt text are analysed on the device only; message content is never stored or uploaded. The app PIN is stored on the device as a hash; biometrics are handled by the operating system. Service logos are fetched by sending the service's domain name to Google's site-icon service (can be disabled), and the public price list is read from this website (hosted by GitHub). You can delete your account and all its data in the app (Settings → Account → Delete account) or via <a href="hapus-akun.html">the account deletion page</a>. Contact: langgananku.app@gmail.com</p>
 </main>
 </body>
 </html>

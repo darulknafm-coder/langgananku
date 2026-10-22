@@ -42,8 +42,8 @@ jobs:
         run: |
           sed -i 's|<title>[^<]*</title>|<title>LanggananKu</title>|' build/web/index.html
           sed -i 's|content="A new Flutter project."|content="LanggananKu - pantau semua langganan berbayar Anda."|' build/web/index.html
-          sed -i 's|<head>|<head>\n  <meta name="theme-color" content="#0E0F12">\n  <style>body{background:#0E0F12}</style>|' build/web/index.html
-          sed -i 's|"name": "langgananku"|"name": "LanggananKu"|; s|"short_name": "langgananku"|"short_name": "LanggananKu"|; s|"background_color": "#[0-9A-Fa-f]*"|"background_color": "#0E0F12"|; s|"theme_color": "#[0-9A-Fa-f]*"|"theme_color": "#0E0F12"|' build/web/manifest.json
+          sed -i 's|<head>|<head>\n  <meta name="theme-color" content="#0E9C97">\n  <style>body{background:#F5F7F7}@media (prefers-color-scheme: dark){body{background:#0D1213}}</style>|' build/web/index.html
+          sed -i 's|"name": "langgananku"|"name": "LanggananKu"|; s|"short_name": "langgananku"|"short_name": "LanggananKu"|; s|"background_color": "#[0-9A-Fa-f]*"|"background_color": "#F5F7F7"|; s|"theme_color": "#[0-9A-Fa-f]*"|"theme_color": "#0E9C97"|' build/web/manifest.json
 
       - name: Salin ke docs/app dan commit
         run: |
