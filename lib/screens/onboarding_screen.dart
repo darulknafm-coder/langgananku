@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../services/notification_service.dart';
 import '../services/repository.dart';
 import '../theme/app_theme.dart';
-import 'scan_screen.dart';
+import 'catalog_picker.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
@@ -14,7 +14,7 @@ class OnboardingScreen extends StatelessWidget {
     // Layar utama tampil otomatis setelah onboarding selesai (lihat AppRoot).
     await Repo.instance.completeOnboarding();
     if (scan) {
-      nav.push(MaterialPageRoute(builder: (_) => const ScanScreen()));
+      nav.push(MaterialPageRoute(builder: (_) => const CatalogPicker()));
     }
   }
 
@@ -70,19 +70,19 @@ class OnboardingScreen extends StatelessWidget {
                 'dan membantu berhenti membayar yang tidak terpakai.',
                 style: TextStyle(color: AppColors.muted, fontSize: 15, height: 1.45)),
             const SizedBox(height: 30),
-            point(Icons.document_scanner_outlined, 'Deteksi otomatis',
-                'Dari SMS bank/e-wallet (Android) atau email nota yang Anda tempel.'),
-            point(Icons.notifications_active_outlined, 'Pengingat H-3 & H-1',
+            point(Icons.add_circle_outline_rounded, 'Catat dalam hitungan detik',
+                'Pilih layanannya, isi harga dan tanggal bayar. Selesai.'),
+            point(Icons.notifications_active_outlined, 'Diingatkan sebelum ditagih',
                 'Tidak ada lagi tagihan yang lewat tanpa disadari.'),
-            point(Icons.lock_outline_rounded, 'Data tetap di HP Anda',
-                'Tanpa akun dan tanpa server. Semua diproses di perangkat.'),
+            point(Icons.cloud_done_outlined, 'Aman di akun Anda',
+                'Data tersimpan di akun, jadi tidak hilang saat ganti HP.'),
             const Spacer(),
             SizedBox(
               width: double.infinity,
               child: FilledButton(
                 onPressed: () => _start(context, scan: true),
                 style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 18)),
-                child: const Text('Mulai & tempel nota tagihan'),
+                child: const Text('Tambah langganan pertama'),
               ),
             ),
             const SizedBox(height: 8),
@@ -91,7 +91,7 @@ class OnboardingScreen extends StatelessWidget {
               child: TextButton(
                 onPressed: () => _start(context, scan: false),
                 style: TextButton.styleFrom(foregroundColor: AppColors.muted),
-                child: const Text('Nanti saja, isi manual'),
+                child: const Text('Nanti saja'),
               ),
             ),
           ]),

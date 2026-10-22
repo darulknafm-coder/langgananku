@@ -69,7 +69,7 @@ class _CatalogPickerState extends State<CatalogPicker> {
                       const SizedBox(height: 4),
                       SubAvatar(logoKey: c.key, name: c.name, color: c.color, size: 52),
                       const SizedBox(height: 8),
-                      Text(c.name.split(' ').first,
+                      Text(c.name.replaceAll(RegExp(r' (Premium|Plus|Pro|Hotstar|Platinum)\b'), ''),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.center,
