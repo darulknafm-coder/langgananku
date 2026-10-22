@@ -85,7 +85,7 @@ class AuthService {
       });
       unawaited(u.sendEmailVerification().catchError((_) {}));
     } on FirebaseAuthException catch (e) {
-      throw AuthFailure(_message(e.code));
+      throw AuthFailure(_message(e.code, e.message));
     } on FirebaseException catch (e) {
       throw AuthFailure('Gagal menyimpan profil (${e.code}). Coba lagi.');
     }
@@ -95,7 +95,7 @@ class AuthService {
     try {
       await _auth.signInWithEmailAndPassword(email: email.trim(), password: password);
     } on FirebaseAuthException catch (e) {
-      throw AuthFailure(_message(e.code));
+      throw AuthFailure(_message(e.code, e.message));
     }
   }
 
@@ -170,7 +170,16 @@ class AuthService {
     }
   }
 
-  static String _message(String code) => switch (code) {
+  static String _message(String code, [String? detail]) {
+    final d = detail ?? '';
+    if (d.contains('CONFIGURATION_NOT_FOUND') || code == 'operation-not-allowed') {
+      return 'Layanan login belum aktif di server. Hubungi pengembang aplikasi.';
+    }
+    if (code == 'unknown' && d.isNotEmpty) return 'Terjadi kesalahan: $d';
+    return _messageFor(code);
+  }
+
+  static String _messageFor(String code) => switch (code) {
         'email-already-in-use' => 'Email ini sudah terdaftar. Silakan masuk.',
         'invalid-email' => 'Format email tidak valid.',
         'weak-password' => 'Password terlalu lemah. Gunakan minimal 8 karakter.',
