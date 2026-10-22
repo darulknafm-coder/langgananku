@@ -1,0 +1,30 @@
+name: Cek konfigurasi Firebase
+
+on:
+  workflow_dispatch:
+  push:
+    paths: ['.github/workflows/cek-firebase.yml']
+
+jobs:
+  cek:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Uji Authentication & Firestore
+        shell: bash
+        run: |
+          KEY=AIzaSyAuyVwZgvLnyOtjZMVhATz4YgY2JYAxPp4
+          P=langgananku-ada63
+          E="cek-$(date +%s)@example.com"
+          r1=$(curl -s -X POST "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=$KEY" -H 'Content-Type: application/json' -d "{\"email\":\"$E\",\"password\":\"Cek12345!\",\"returnSecureToken\":true}")
+          tok=$(echo "$r1" | python3 -c 'import sys,json; print(json.load(sys.stdin).get("idToken",""))')
+          s1=$(echo "$r1" | python3 -c 'import sys,json; d=json.load(sys.stdin); print("OK daftar berhasil" if "idToken" in d else d.get("error",{}).get("message"))')
+          if [ -n "$tok" ]; then
+            uid=$(echo "$r1" | python3 -c 'import sys,json; print(json.load(sys.stdin)["localId"])')
+            r2=$(curl -s -X PATCH "https://firestore.googleapis.com/v1/projects/$P/databases/(default)/documents/users/$uid" -H "Authorization: Bearer $tok" -H 'Content-Type: application/json' -d '{"fields":{"name":{"stringValue":"cek"}}}')
+            s2=$(echo "$r2" | python3 -c 'import sys,json; d=json.load(sys.stdin); print("OK tulis Firestore berhasil" if "name" in d and "error" not in d else str(d.get("error",{}).get("status"))+" "+str(d.get("error",{}).get("message"))[:200])')
+            curl -s -X DELETE "https://firestore.googleapis.com/v1/projects/$P/databases/(default)/documents/users/$uid" -H "Authorization: Bearer $tok" >/dev/null
+            curl -s -X POST "https://identitytoolkit.googleapis.com/v1/accounts:delete?key=$KEY" -H 'Content-Type: application/json' -d "{\"idToken\":\"$tok\"}" >/dev/null
+          else
+            s2="(dilewati)"
+          fi
+          echo "::notice title=Hasil cek::AUTH: $s1 | FIRESTORE: $s2"
