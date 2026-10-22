@@ -51,12 +51,12 @@ class _PromoScreenState extends State<PromoScreen> {
               children: [
                 AppCard(
                   child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    const Icon(Icons.info_outline_rounded, color: AppColors.muted, size: 20),
+                    Icon(Icons.info_outline_rounded, color: AppColors.muted, size: 20),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         '${promo.note}${promo.updated.isNotEmpty ? '\nDiperbarui: ${promo.updated}' : ''}',
-                        style: const TextStyle(color: AppColors.muted, fontSize: 13, height: 1.45),
+                        style: TextStyle(color: AppColors.muted, fontSize: 13, height: 1.45),
                       ),
                     ),
                   ]),
@@ -81,7 +81,7 @@ class _PromoScreenState extends State<PromoScreen> {
                   PromoCard(promo: s),
                 ],
                 if (list.isEmpty)
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.only(top: 40),
                     child: Center(
                         child: Text('Belum ada data promo.',
@@ -122,11 +122,11 @@ class PromoCard extends StatelessWidget {
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(c.name, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
                 const SizedBox(height: 2),
-                Text(c.category, style: const TextStyle(color: AppColors.muted, fontSize: 12.5)),
+                Text(c.category, style: TextStyle(color: AppColors.muted, fontSize: 12.5)),
               ]),
             ),
             if (my != null)
-              const Pill('Langganan Anda', fg: AppColors.sky, bg: Color(0x265AC8FA)),
+              Pill('Langganan Anda', fg: AppColors.sky, bg: AppColors.skyDeep),
           ]),
         if (promo.offer != null) ...[
           if (!compact) const SizedBox(height: 12),
@@ -139,15 +139,15 @@ class PromoCard extends StatelessWidget {
               border: Border.all(color: AppColors.lime.withAlpha(60)),
             ),
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Icon(Icons.local_offer_rounded, color: AppColors.lime, size: 18),
+              Icon(Icons.local_offer_rounded, color: AppColors.lime, size: 18),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(promo.offer!,
-                      style: const TextStyle(color: AppColors.lime, fontWeight: FontWeight.w700)),
+                      style: TextStyle(color: AppColors.accentText, fontWeight: FontWeight.w700)),
                   if (promo.offerNote != null)
                     Text(promo.offerNote!,
-                        style: TextStyle(color: AppColors.lime.withAlpha(190), fontSize: 12.5)),
+                        style: TextStyle(color: AppColors.accentText.withAlpha(190), fontSize: 12.5)),
                 ]),
               ),
             ]),
@@ -173,12 +173,12 @@ class PromoCard extends StatelessWidget {
                     Text(p.name, style: const TextStyle(fontWeight: FontWeight.w600)),
                     if (p.note != null)
                       Text(p.note!,
-                          style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                          style: TextStyle(color: AppColors.muted, fontSize: 12)),
                     if (myMonthly != null && p.monthlyIdr < myMonthly - 500)
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
                         child: Pill('Hemat ${rupiah(myMonthly - p.monthlyIdr)}/bln',
-                            fg: AppColors.lime, bg: AppColors.limeDeep,
+                            fg: AppColors.accentText, bg: AppColors.limeDeep,
                             icon: Icons.south_rounded),
                       ),
                   ]),
@@ -187,7 +187,7 @@ class PromoCard extends StatelessWidget {
                 Text(p.priceLabel,
                     style: const TextStyle(fontWeight: FontWeight.w700, fontFeatures: kTabular)),
                 const SizedBox(width: 6),
-                const Icon(Icons.chevron_right_rounded, color: AppColors.faint, size: 20),
+                Icon(Icons.chevron_right_rounded, color: AppColors.faint, size: 20),
               ]),
             ),
           ),
@@ -197,7 +197,7 @@ class PromoCard extends StatelessWidget {
             child: Text('Sumber: ${promo.source}',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: AppColors.faint, fontSize: 11.5)),
+                style: TextStyle(color: AppColors.faint, fontSize: 11.5)),
           ),
           TextButton.icon(
             onPressed: () => openOfficial(context, promo.url),

@@ -292,7 +292,7 @@ class _EditScreenState extends State<EditScreen> {
                 ),
             ]),
             if (_reminders.isEmpty)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(top: 6),
                 child: Text('Tanpa pengingat untuk langganan ini.',
                     style: TextStyle(fontSize: 12.5, color: AppColors.muted)),

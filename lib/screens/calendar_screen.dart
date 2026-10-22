@@ -70,7 +70,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
                     const SizedBox(height: 2),
                     Text('${due.values.fold<int>(0, (a, l) => a + l.length)} tagihan · ${rupiah(total)}',
-                        style: const TextStyle(
+                        style: TextStyle(
                             color: AppColors.muted, fontSize: 13, fontFeatures: kTabular)),
                   ]),
                 ),
@@ -97,7 +97,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               // ---------- Daftar hari terpilih ----------
               SectionTitle(DateFormat('EEEE, d MMMM', 'id_ID').format(_selected)),
               if (dayList.isEmpty)
-                const AppCard(
+                AppCard(
                   child: Text('Tidak ada tagihan di tanggal ini.',
                       style: TextStyle(color: AppColors.muted)),
                 )
@@ -151,7 +151,7 @@ class _MonthGrid extends StatelessWidget {
       for (final n in names)
         Center(
           child: Text(n,
-              style: const TextStyle(
+              style: TextStyle(
                   color: AppColors.muted, fontSize: 12, fontWeight: FontWeight.w600)),
         ),
       for (var i = 0; i < lead; i++) const SizedBox.shrink(),
@@ -230,9 +230,9 @@ class _DayTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final past = due.isBefore(dateOnly(DateTime.now()));
     final status = paid
-        ? const Pill('Dibayar', fg: AppColors.lime, bg: AppColors.limeDeep, icon: Icons.check_rounded)
+        ? Pill('Dibayar', fg: AppColors.accentText, bg: AppColors.limeDeep, icon: Icons.check_rounded)
         : past
-            ? const Pill('Sudah lewat', fg: AppColors.muted, bg: AppColors.surface3)
+            ? Pill('Sudah lewat', fg: AppColors.muted, bg: AppColors.surface3)
             : (dateOnly(s.nextDue) == due ? Pill.forSub(s) : Pill.due(due));
     return InkWell(
       onTap: () =>
@@ -254,7 +254,7 @@ class _DayTile extends StatelessWidget {
                 if (showDate) ...[
                   const SizedBox(width: 8),
                   Text(tanggalPendek(due),
-                      style: const TextStyle(fontSize: 12.5, color: AppColors.muted)),
+                      style: TextStyle(fontSize: 12.5, color: AppColors.muted)),
                 ],
               ]),
             ]),

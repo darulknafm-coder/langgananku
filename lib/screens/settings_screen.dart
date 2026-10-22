@@ -5,7 +5,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../services/auth_service.dart';
 import '../services/notification_service.dart';
+import 'account_section.dart';
 import 'lock_screen.dart';
 import '../services/repository.dart';
 import '../utils/format.dart';
@@ -206,7 +208,7 @@ class SettingsScreen extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Hapus semua data?'),
-        content: const Text('Semua langganan dan riwayat harga di HP ini akan dihapus.'),
+        content: const Text('Semua langganan dan riwayat harga akan dihapus, di HP ini maupun di akun Anda. Akun tetap ada.'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
           FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Hapus')),
@@ -228,6 +230,10 @@ class SettingsScreen extends StatelessWidget {
           body: ListView(
             padding: const EdgeInsets.fromLTRB(20, 4, 20, 40),
             children: [
+              if (AuthService.available) ...[
+                const SectionTitle('Akun'),
+                const AccountSection(),
+              ],
               const SectionTitle('Pengingat'),
               AppCard(
                 padding: const EdgeInsets.symmetric(vertical: 4),
@@ -301,6 +307,27 @@ class SettingsScreen extends StatelessWidget {
                 ]),
               ),
               const SectionTitle('Tampilan'),
+              AppCard(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  const Text('Tema', style: TextStyle(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: SegmentedButton<String>(
+                      showSelectedIcon: false,
+                      segments: const [
+                        ButtonSegment(value: 'system', label: Text('Ikuti HP')),
+                        ButtonSegment(value: 'light', label: Text('Terang')),
+                        ButtonSegment(value: 'dark', label: Text('Gelap')),
+                      ],
+                      selected: {repo.themeMode.value},
+                      onSelectionChanged: (v) => repo.setThemeMode(v.first),
+                    ),
+                  ),
+                ]),
+              ),
+              const SizedBox(height: 10),
               AppCard(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: SwitchListTile(

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../services/notification_service.dart';
 import '../services/repository.dart';
 import '../theme/app_theme.dart';
-import 'home_shell.dart';
 import 'scan_screen.dart';
 
 class OnboardingScreen extends StatelessWidget {
@@ -11,10 +10,9 @@ class OnboardingScreen extends StatelessWidget {
 
   Future<void> _start(BuildContext context, {required bool scan}) async {
     await NotificationService.requestPermission();
-    await Repo.instance.completeOnboarding();
-    if (!context.mounted) return;
     final nav = Navigator.of(context);
-    nav.pushReplacement(MaterialPageRoute(builder: (_) => const HomeShell()));
+    // Layar utama tampil otomatis setelah onboarding selesai (lihat AppRoot).
+    await Repo.instance.completeOnboarding();
     if (scan) {
       nav.push(MaterialPageRoute(builder: (_) => const ScanScreen()));
     }
@@ -40,7 +38,7 @@ class OnboardingScreen extends StatelessWidget {
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15.5)),
                 const SizedBox(height: 3),
-                Text(body, style: const TextStyle(color: AppColors.muted, height: 1.4)),
+                Text(body, style: TextStyle(color: AppColors.muted, height: 1.4)),
               ]),
             ),
           ]),
@@ -56,19 +54,19 @@ class OnboardingScreen extends StatelessWidget {
               height: 56,
               decoration: BoxDecoration(
                   color: AppColors.lime, borderRadius: BorderRadius.circular(18)),
-              child: const Icon(Icons.autorenew_rounded, size: 30, color: AppColors.onLime),
+              child: Icon(Icons.autorenew_rounded, size: 30, color: AppColors.onLime),
             ),
             const SizedBox(height: 28),
-            const Text.rich(
+            Text.rich(
               TextSpan(children: [
                 TextSpan(text: 'Semua tagihan\nberulang, '),
-                TextSpan(text: 'terkendali.', style: TextStyle(color: AppColors.lime)),
+                TextSpan(text: 'terkendali.', style: TextStyle(color: AppColors.accentText)),
               ]),
               style: TextStyle(
                   fontSize: 34, fontWeight: FontWeight.w800, height: 1.15, letterSpacing: -0.8),
             ),
             const SizedBox(height: 12),
-            const Text('LanggananKu menemukan langganan Anda, mengingatkan sebelum ditagih, '
+            Text('LanggananKu menemukan langganan Anda, mengingatkan sebelum ditagih, '
                 'dan membantu berhenti membayar yang tidak terpakai.',
                 style: TextStyle(color: AppColors.muted, fontSize: 15, height: 1.45)),
             const SizedBox(height: 30),

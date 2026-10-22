@@ -158,7 +158,7 @@ class _LockScreenState extends State<_LockScreen> {
           extra: _bio
               ? IconButton(
                   onPressed: _tryBio,
-                  icon: const Icon(Icons.fingerprint_rounded, size: 34, color: AppColors.lime),
+                  icon: Icon(Icons.fingerprint_rounded, size: 34, color: AppColors.lime),
                 )
               : null,
           footer: TextButton(
@@ -174,12 +174,12 @@ class _LockScreenState extends State<_LockScreen> {
     return Padding(
       padding: const EdgeInsets.all(28),
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        const Icon(Icons.lock_reset_rounded, size: 48, color: AppColors.coral),
+        Icon(Icons.lock_reset_rounded, size: 48, color: AppColors.coral),
         const SizedBox(height: 16),
         const Text('Lupa PIN?',
             style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
         const SizedBox(height: 10),
-        const Text(
+        Text(
           'Demi keamanan, PIN tidak bisa dipulihkan. Anda bisa menghapus semua data '
           'di HP ini untuk membuka aplikasi. Bila punya file cadangan, data bisa dipulihkan lagi.',
           textAlign: TextAlign.center,
@@ -266,7 +266,7 @@ class PinPad extends StatelessWidget {
                 height: 60,
                 decoration: BoxDecoration(
                     color: AppColors.limeDeep, borderRadius: BorderRadius.circular(20)),
-                child: const Icon(Icons.lock_rounded, color: AppColors.lime, size: 28),
+                child: Icon(Icons.lock_rounded, color: AppColors.lime, size: 28),
               ),
               const SizedBox(height: 18),
               Text(title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
@@ -300,7 +300,7 @@ class PinPad extends StatelessWidget {
                   Row(children: [
                     key(extra ?? const SizedBox.shrink(), null),
                     digit('0'),
-                    key(const Icon(Icons.backspace_outlined, color: AppColors.muted), onDelete),
+                    key(Icon(Icons.backspace_outlined, color: AppColors.muted), onDelete),
                   ]),
                 ]),
               ),

@@ -129,6 +129,8 @@ String _patchKts(String g) {
   g = g.replaceFirst(RegExp(r'applicationId\s*=\s*"[^"]*"'), 'applicationId = "$appId"');
   g = g.replaceFirst(RegExp(r'compileSdk\s*=\s*[^\n]+'), 'compileSdk = 36');
   g = g.replaceFirst(RegExp(r'targetSdk\s*=\s*[^\n]+'), 'targetSdk = 36');
+  // Firebase butuh minimal Android 6 (API 23).
+  g = g.replaceFirst(RegExp(r'minSdk\s*=\s*flutter\.minSdkVersion'), 'minSdk = maxOf(23, flutter.minSdkVersion)');
   if (!g.contains('isCoreLibraryDesugaringEnabled')) {
     g = g.replaceFirst('compileOptions {', 'compileOptions {\n        isCoreLibraryDesugaringEnabled = true');
     g += '\ndependencies {\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")\n}\n';
@@ -168,6 +170,7 @@ String _patchGroovy(String g) {
   g = g.replaceFirst(RegExp(r'applicationId\s*=?\s*"[^"]*"'), 'applicationId "$appId"');
   g = g.replaceFirst(RegExp(r'compileSdk(Version)?\s*=?\s*[^\n]+'), 'compileSdk 36');
   g = g.replaceFirst(RegExp(r'targetSdk(Version)?\s*=?\s*[^\n]+'), 'targetSdk 36');
+  g = g.replaceFirst(RegExp(r'minSdk(Version)?\s*=?\s*flutter\.minSdkVersion'), 'minSdk Math.max(23, flutter.minSdkVersion)');
   if (!g.contains('coreLibraryDesugaringEnabled')) {
     g = g.replaceFirst('compileOptions {', 'compileOptions {\n        coreLibraryDesugaringEnabled true');
     g += "\ndependencies {\n    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'\n}\n";

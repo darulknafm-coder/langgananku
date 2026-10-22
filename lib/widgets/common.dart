@@ -78,7 +78,7 @@ class _SubAvatarState extends State<SubAvatar> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: radius,
-          border: Border.all(color: Colors.white.withAlpha(18)),
+          border: Border.all(color: AppColors.line),
         ),
         child: Image.memory(
           _bytes!,
@@ -113,7 +113,7 @@ class _SubAvatarState extends State<SubAvatar> {
       ),
       child: Text(initials,
           style: TextStyle(
-              color: light ? AppColors.onLime : Colors.white,
+              color: light ? const Color(0xFF13201F) : Colors.white,
               fontWeight: FontWeight.w800,
               fontSize: size * 0.34,
               letterSpacing: 0.3)),
@@ -133,7 +133,7 @@ class SectionTitle extends StatelessWidget {
       child: Row(children: [
         Expanded(
           child: Text(text,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.text)),
         ),
         if (trailing != null) trailing!,
@@ -208,7 +208,7 @@ class Pill extends StatelessWidget {
           key: key,
           icon: Icons.hourglass_top_rounded,
           fg: n <= 3 ? AppColors.coral : AppColors.sky,
-          bg: n <= 3 ? AppColors.coralDeep : const Color(0x265AC8FA));
+          bg: n <= 3 ? AppColors.coralDeep : AppColors.skyDeep);
     }
     return Pill.due(s.nextDue, key: key);
   }
@@ -260,14 +260,14 @@ class SubTile extends StatelessWidget {
               const SizedBox(height: 5),
               Row(children: [
                 if (s.active) Pill.forSub(s) else
-                  const Pill('Nonaktif', fg: AppColors.faint, bg: AppColors.surface3),
+                  Pill('Nonaktif', fg: AppColors.faint, bg: AppColors.surface3),
                 const SizedBox(width: 8),
                 Flexible(
                   child: Text(
                     s.active ? '${tanggalPendek(s.nextDue)} · ${s.paymentMethod}' : s.paymentMethod,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 12.5, color: AppColors.muted),
+                    style: TextStyle(fontSize: 12.5, color: AppColors.muted),
                   ),
                 ),
               ]),
@@ -280,7 +280,7 @@ class SubTile extends StatelessWidget {
                     fontSize: 15, fontWeight: FontWeight.w700, fontFeatures: kTabular)),
             const SizedBox(height: 3),
             Text(s.cycle.perLabel + (s.sharedWith > 1 ? ' · ÷${s.sharedWith}' : ''),
-                style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                style: TextStyle(fontSize: 12, color: AppColors.muted)),
           ]),
         ]),
       ),
@@ -387,10 +387,10 @@ InputDecoration inputDeco(String label, {String? hint, String? prefix, String? h
     helperText: helper,
     filled: true,
     fillColor: AppColors.surface,
-    labelStyle: const TextStyle(color: AppColors.muted),
-    floatingLabelStyle: const TextStyle(color: AppColors.lime, fontWeight: FontWeight.w600),
-    helperStyle: const TextStyle(color: AppColors.faint),
-    hintStyle: const TextStyle(color: AppColors.faint),
+    labelStyle: TextStyle(color: AppColors.muted),
+    floatingLabelStyle: TextStyle(color: AppColors.accentText, fontWeight: FontWeight.w600),
+    helperStyle: TextStyle(color: AppColors.faint),
+    hintStyle: TextStyle(color: AppColors.faint),
     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     border: b(AppColors.line),
     enabledBorder: b(AppColors.line),
@@ -403,17 +403,17 @@ InputDecoration inputDeco(String label, {String? hint, String? prefix, String? h
 /// Kolom pencarian berbentuk kapsul.
 InputDecoration searchDeco(String hint) => InputDecoration(
       hintText: hint,
-      prefixIcon: const Icon(Icons.search_rounded, color: AppColors.muted),
+      prefixIcon: Icon(Icons.search_rounded, color: AppColors.muted),
       filled: true,
       fillColor: AppColors.surface,
       isDense: true,
       contentPadding: const EdgeInsets.symmetric(vertical: 14),
-      hintStyle: const TextStyle(color: AppColors.faint),
+      hintStyle: TextStyle(color: AppColors.faint),
       border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(99), borderSide: const BorderSide(color: AppColors.line)),
+          borderRadius: BorderRadius.circular(99), borderSide: BorderSide(color: AppColors.line)),
       enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(99), borderSide: const BorderSide(color: AppColors.line)),
+          borderRadius: BorderRadius.circular(99), borderSide: BorderSide(color: AppColors.line)),
       focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(99),
-          borderSide: const BorderSide(color: AppColors.lime, width: 1.4)),
+          borderSide: BorderSide(color: AppColors.lime, width: 1.4)),
     );

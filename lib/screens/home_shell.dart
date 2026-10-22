@@ -39,7 +39,7 @@ class _HomeShellState extends State<HomeShell> {
             )
           : null,
       bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           border: Border(top: BorderSide(color: AppColors.line)),
         ),
         child: NavigationBar(
@@ -130,7 +130,7 @@ Future<void> showAddSheet(BuildContext context) {
           const Text('Tambah langganan',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
           const SizedBox(height: 4),
-          const Text('Pilih cara yang paling cepat untuk Anda.',
+          Text('Pilih cara yang paling cepat untuk Anda.',
               style: TextStyle(color: AppColors.muted)),
           const SizedBox(height: 18),
           option(Icons.document_scanner_rounded, 'Pindai SMS / email nota',

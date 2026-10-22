@@ -28,6 +28,14 @@ class Repo extends ChangeNotifier {
   bool onboarded = false;
   double usdRate = 16500;
   bool showLogos = true;
+
+  /// 'system' (ikut HP), 'light', atau 'dark'.
+  final ValueNotifier<String> themeMode = ValueNotifier('system');
+
+  /// Dipanggil setiap data tersimpan (dipakai sinkronisasi akun).
+  static VoidCallback? onChanged;
+  bool _silent = false; // true saat memuat data dari cloud → jangan unggah balik
+  DateTime lastChange = DateTime.fromMillisecondsSinceEpoch(0);
   /// Batas anggaran langganan per bulan (0 = tidak dipakai).
   double monthlyBudget = 0;
   bool _wasOverBudget = false;
@@ -66,6 +74,8 @@ class Repo extends ChangeNotifier {
         onboarded = (s['onboarded'] as bool?) ?? false;
         usdRate = ((s['usdRate'] as num?) ?? 16500).toDouble();
         showLogos = (s['showLogos'] as bool?) ?? true;
+        themeMode.value = (s['themeMode'] as String?) ?? 'system';
+        lastChange = DateTime.tryParse((s['lastChange'] as String?) ?? '') ?? lastChange;
         monthlyBudget = ((s['monthlyBudget'] as num?) ?? 0).toDouble();
         _pinHash = s['pinHash'] as String?;
         _pinSalt = (s['pinSalt'] as String?) ?? '';
@@ -145,10 +155,13 @@ class Repo extends ChangeNotifier {
           'usdRate': usdRate,
           'showLogos': showLogos,
           'monthlyBudget': monthlyBudget,
+          'themeMode': themeMode.value,
+          'lastChange': lastChange.toIso8601String(),
           'pinHash': _pinHash,
           'pinSalt': _pinSalt,
           'bioEnabled': bioEnabled,
         }));
+    if (!_silent) onChanged?.call();
     // Jangan pernah menahan UI menunggu penjadwalan notifikasi.
     unawaited(NotificationService.reschedule(subs, enabled: remindersEnabled, hour: reminderHour)
         .timeout(const Duration(seconds: 20), onTimeout: () {})
@@ -164,6 +177,7 @@ class Repo extends ChangeNotifier {
   }
 
   Future<void> _commit() async {
+    if (!_silent) lastChange = DateTime.now();
     final over = isOverBudget;
     if (over && !_wasOverBudget) {
       NotificationService.showNow('Anggaran langganan terlampaui',
@@ -412,18 +426,74 @@ class Repo extends ChangeNotifier {
     await _commit();
   }
 
+  Future<void> setThemeMode(String v) async {
+    themeMode.value = v;
+    await _commit();
+  }
+
   String exportJson() => const JsonEncoder.withIndent('  ').convert({
         'app': 'LanggananKu',
-        'version': 2,
+        'version': 3,
         'exportedAt': DateTime.now().toIso8601String(),
         'usdRate': usdRate,
         'monthlyBudget': monthlyBudget,
+        'settings': {
+          'remindersEnabled': remindersEnabled,
+          'reminderHour': reminderHour,
+          'onboarded': onboarded,
+          'showLogos': showLogos,
+          'themeMode': themeMode.value,
+        },
         'subs': subs.map((s) => s.toJson()).toList(),
         'alerts': alerts.map((a) => a.toJson()).toList(),
       });
 
+  /// Ganti data lokal dengan data dari akun (tanpa memicu unggah balik).
+  Future<int> applyCloud(String raw, DateTime cloudTime) async {
+    _silent = true;
+    try {
+      final n = await importJson(raw);
+      lastChange = cloudTime;
+      await _persist();
+      return n;
+    } finally {
+      _silent = false;
+    }
+  }
+
+  /// Hapus semua data di HP ini (saat keluar akun / hapus akun).
+  Future<void> resetLocal() async {
+    _silent = true;
+    try {
+      subs.clear();
+      alerts.clear();
+      remindersEnabled = true;
+      reminderHour = 9;
+      onboarded = false;
+      monthlyBudget = 0;
+      _pinHash = null;
+      bioEnabled = false;
+      lastChange = DateTime.fromMillisecondsSinceEpoch(0);
+      notifyListeners();
+      await _persist();
+    } finally {
+      _silent = false;
+    }
+  }
+
+  bool get hasData => subs.isNotEmpty;
+
   Future<int> importJson(String raw) async {
     final j = jsonDecode(raw) as Map<String, dynamic>;
+    final st = j['settings'] as Map?;
+    if (st != null) {
+      remindersEnabled = (st['remindersEnabled'] as bool?) ?? remindersEnabled;
+      reminderHour = (st['reminderHour'] as num?)?.toInt() ?? reminderHour;
+      onboarded = (st['onboarded'] as bool?) ?? onboarded;
+      showLogos = (st['showLogos'] as bool?) ?? showLogos;
+      LogoService.enabled = showLogos;
+      themeMode.value = (st['themeMode'] as String?) ?? themeMode.value;
+    }
     final list = (j['subs'] as List)
         .map((e) => Subscription.fromJson(Map<String, dynamic>.from(e as Map)))
         .toList();

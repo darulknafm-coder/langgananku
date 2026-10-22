@@ -50,7 +50,7 @@ class DashboardScreen extends StatelessWidget {
                   Expanded(
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Text(_salam(),
-                          style: const TextStyle(color: AppColors.muted, fontSize: 14)),
+                          style: TextStyle(color: AppColors.muted, fontSize: 14)),
                       const SizedBox(height: 2),
                       const Text('LanggananKu',
                           style: TextStyle(
@@ -90,26 +90,26 @@ class DashboardScreen extends StatelessWidget {
                         decoration: BoxDecoration(
                             color: AppColors.coral.withAlpha(40),
                             borderRadius: BorderRadius.circular(12)),
-                        child: const Icon(Icons.trending_up_rounded,
+                        child: Icon(Icons.trending_up_rounded,
                             color: AppColors.coral, size: 20),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                           Text('Harga ${a.name} naik ${a.percent.toStringAsFixed(0)}%',
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontWeight: FontWeight.w700, color: AppColors.text)),
                           const SizedBox(height: 2),
                           Text('${a.oldLabel} → ${a.newLabel}',
                               style: const TextStyle(
-                                  color: Color(0xFFFFB4AB),
+                                  color: AppColors.coral,
                                   fontSize: 13,
                                   fontFeatures: kTabular)),
                         ]),
                       ),
                       IconButton(
                         tooltip: 'Tutup',
-                        icon: const Icon(Icons.close_rounded, color: AppColors.muted, size: 20),
+                        icon: Icon(Icons.close_rounded, color: AppColors.muted, size: 20),
                         onPressed: () => repo.dismissAlert(a),
                       ),
                     ]),
@@ -158,19 +158,19 @@ class DashboardScreen extends StatelessWidget {
                               child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text('Potensi hemat',
+                                    Text('Potensi hemat',
                                         style: TextStyle(
                                             color: AppColors.onLime,
                                             fontWeight: FontWeight.w600)),
                                     const SizedBox(height: 2),
                                     Text('${rupiah(saving)}/bln',
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                             color: AppColors.onLime,
                                             fontSize: 24,
                                             fontWeight: FontWeight.w800,
                                             fontFeatures: kTabular)),
                                     const SizedBox(height: 2),
-                                    const Text(
+                                    Text(
                                         'Dari langganan jarang dipakai, duplikat, dan paket tahunan',
                                         style: TextStyle(
                                             color: AppColors.onLime, fontSize: 12.5)),
@@ -179,9 +179,9 @@ class DashboardScreen extends StatelessWidget {
                             Container(
                               width: 44,
                               height: 44,
-                              decoration: const BoxDecoration(
+                              decoration: BoxDecoration(
                                   color: AppColors.onLime, shape: BoxShape.circle),
-                              child: const Icon(Icons.arrow_forward_rounded,
+                              child: Icon(Icons.arrow_forward_rounded,
                                   color: AppColors.lime),
                             ),
                           ]),
@@ -194,7 +194,7 @@ class DashboardScreen extends StatelessWidget {
                   const SectionTitle('Komposisi pengeluaran'),
                   _CategoryCard(data: repo.byCategory(), total: repo.monthlyTotal),
                   const SizedBox(height: 12),
-                  const Text(
+                  Text(
                     'Tagihan tahunan dihitung per bulan; langganan bersama dibagi jumlah anggota.',
                     style: TextStyle(color: AppColors.faint, fontSize: 12),
                   ),
@@ -229,7 +229,7 @@ class _PromoEntry extends StatelessWidget {
               height: 44,
               decoration: BoxDecoration(
                   color: AppColors.limeDeep, borderRadius: BorderRadius.circular(14)),
-              child: const Icon(Icons.local_offer_rounded, color: AppColors.lime),
+              child: Icon(Icons.local_offer_rounded, color: AppColors.lime),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -241,7 +241,7 @@ class _PromoEntry extends StatelessWidget {
                     p.services.isEmpty
                         ? 'Bandingkan harga paket resmi'
                         : '${p.services.length} layanan · $offers promo aktif',
-                    style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+                    style: TextStyle(color: AppColors.muted, fontSize: 13)),
               ]),
             ),
             for (final s in logos)
@@ -251,7 +251,7 @@ class _PromoEntry extends StatelessWidget {
                   child: SubAvatar(logoKey: c.key, name: c.name, color: c.color, size: 24),
                 ),
             const SizedBox(width: 4),
-            const Icon(Icons.chevron_right_rounded, color: AppColors.faint),
+            Icon(Icons.chevron_right_rounded, color: AppColors.faint),
           ]),
         );
       },
@@ -271,7 +271,7 @@ class _RoundIcon extends StatelessWidget {
       message: tooltip,
       child: Material(
         color: AppColors.surface,
-        shape: const CircleBorder(side: BorderSide(color: AppColors.line)),
+        shape: CircleBorder(side: BorderSide(color: AppColors.line)),
         child: InkWell(
           customBorder: const CircleBorder(),
           onTap: onTap,
@@ -298,7 +298,7 @@ class _Bell extends StatelessWidget {
           shape: BoxShape.circle,
           border: Border.all(color: AppColors.line),
         ),
-        child: const Icon(Icons.notifications_none_rounded, color: AppColors.text),
+        child: Icon(Icons.notifications_none_rounded, color: AppColors.text),
       ),
       if (count > 0)
         Positioned(
@@ -308,9 +308,9 @@ class _Bell extends StatelessWidget {
             width: 18,
             height: 18,
             alignment: Alignment.center,
-            decoration: const BoxDecoration(color: AppColors.coral, shape: BoxShape.circle),
+            decoration: BoxDecoration(color: AppColors.coral, shape: BoxShape.circle),
             child: Text('$count',
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.onLime)),
           ),
         ),
@@ -330,7 +330,7 @@ class _TotalCard extends StatelessWidget {
   Widget build(BuildContext context) {
     Widget stat(String label, String value) => Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 12.5)),
+            Text(label, style: TextStyle(color: AppColors.muted, fontSize: 12.5)),
             const SizedBox(height: 3),
             Text(value,
                 style: const TextStyle(
@@ -343,10 +343,10 @@ class _TotalCard extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(26),
         border: Border.all(color: AppColors.line),
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF1C2114), AppColors.surface, AppColors.surface],
+          colors: [AppColors.heroFrom, AppColors.surface, AppColors.surface],
           stops: [0, 0.55, 1],
         ),
       ),
@@ -355,10 +355,10 @@ class _TotalCard extends StatelessWidget {
           Container(
             width: 8,
             height: 8,
-            decoration: const BoxDecoration(color: AppColors.lime, shape: BoxShape.circle),
+            decoration: BoxDecoration(color: AppColors.lime, shape: BoxShape.circle),
           ),
           const SizedBox(width: 8),
-          const Text('Pengeluaran per bulan',
+          Text('Pengeluaran per bulan',
               style: TextStyle(color: AppColors.muted, fontWeight: FontWeight.w600)),
         ]),
         const SizedBox(height: 10),
@@ -404,7 +404,7 @@ class _BudgetBar extends StatelessWidget {
       Row(children: [
         Expanded(
           child: Text('Anggaran ${rupiah(budget)}',
-              style: const TextStyle(color: AppColors.muted, fontSize: 12.5)),
+              style: TextStyle(color: AppColors.muted, fontSize: 12.5)),
         ),
         Text(over ? 'Lewat ${rupiah(-rest)}' : 'Sisa ${rupiah(rest)}',
             style: TextStyle(
@@ -448,7 +448,7 @@ class _UpcomingCard extends StatelessWidget {
               style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5)),
           const SizedBox(height: 2),
           Text(s.amountLabel,
-              style: const TextStyle(
+              style: TextStyle(
                   color: AppColors.muted, fontSize: 13, fontFeatures: kTabular)),
           const SizedBox(height: 8),
           Pill.forSub(s),
@@ -477,7 +477,7 @@ class _CategoryCard extends StatelessWidget {
           center: Column(mainAxisSize: MainAxisSize.min, children: [
             Text('${entries.length}',
                 style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w800)),
-            const Text('kategori', style: TextStyle(color: AppColors.muted, fontSize: 12.5)),
+            Text('kategori', style: TextStyle(color: AppColors.muted, fontSize: 12.5)),
           ]),
         ),
         const SizedBox(height: 20),
@@ -493,7 +493,7 @@ class _CategoryCard extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(child: Text(entries[i].key, style: const TextStyle(fontSize: 14))),
               Text('${total == 0 ? 0 : (entries[i].value / total * 100).round()}%',
-                  style: const TextStyle(color: AppColors.muted, fontSize: 13, fontFeatures: kTabular)),
+                  style: TextStyle(color: AppColors.muted, fontSize: 13, fontFeatures: kTabular)),
               const SizedBox(width: 12),
               SizedBox(
                 width: 96,
@@ -525,13 +525,13 @@ class _EmptyState extends StatelessWidget {
           height: 64,
           decoration: BoxDecoration(
               color: AppColors.limeDeep, borderRadius: BorderRadius.circular(20)),
-          child: const Icon(Icons.layers_rounded, size: 30, color: AppColors.lime),
+          child: Icon(Icons.layers_rounded, size: 30, color: AppColors.lime),
         ),
         const SizedBox(height: 16),
         const Text('Belum ada langganan',
             style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
         const SizedBox(height: 6),
-        const Text('Ketuk layanan yang Anda pakai, atau pindai nota tagihan.',
+        Text('Ketuk layanan yang Anda pakai, atau pindai nota tagihan.',
             textAlign: TextAlign.center, style: TextStyle(color: AppColors.muted)),
         const SizedBox(height: 18),
         Wrap(
@@ -545,9 +545,9 @@ class _EmptyState extends StatelessWidget {
                   avatar: SubAvatar(logoKey: c.key, name: c.name, color: c.color, size: 22),
                   label: Text(c.name.split(' (').first),
                   backgroundColor: AppColors.surface2,
-                  side: const BorderSide(color: AppColors.line),
+                  side: BorderSide(color: AppColors.line),
                   shape: const StadiumBorder(),
-                  labelStyle: const TextStyle(
+                  labelStyle: TextStyle(
                       color: AppColors.text, fontWeight: FontWeight.w600, fontSize: 13),
                   onPressed: () => Navigator.of(context).push(MaterialPageRoute(
                       builder: (_) => EditScreen(fromCatalog: c))),

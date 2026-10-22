@@ -39,7 +39,7 @@ class DetailScreen extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: const Text('Sudah dibatalkan?', style: TextStyle(fontWeight: FontWeight.w800)),
         content: Text('Tandai ${sub.name} sebagai nonaktif agar tidak dihitung lagi.',
-            style: const TextStyle(color: AppColors.muted)),
+            style: TextStyle(color: AppColors.muted)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Belum')),
           FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Sudah, tandai')),
@@ -96,7 +96,7 @@ class DetailScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
             const SizedBox(height: 4),
             Text('Selain Anda, ada $n orang. Nomor WhatsApp opsional.',
-                style: const TextStyle(color: AppColors.muted)),
+                style: TextStyle(color: AppColors.muted)),
             for (var i = 0; i < n; i++) ...[
               const SizedBox(height: 14),
               TextField(
@@ -145,7 +145,7 @@ class DetailScreen extends StatelessWidget {
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text('Hapus ${sub.name}?', style: const TextStyle(fontWeight: FontWeight.w800)),
-        content: const Text('Data dan riwayat harga akan dihapus dari HP ini.',
+        content: Text('Data dan riwayat harga akan dihapus dari HP ini.',
             style: TextStyle(color: AppColors.muted)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
@@ -196,7 +196,7 @@ class DetailScreen extends StatelessWidget {
                   border: Border.all(color: AppColors.line),
                 ),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 12.5)),
+                  Text(label, style: TextStyle(color: AppColors.muted, fontSize: 12.5)),
                   const SizedBox(height: 4),
                   Text(value,
                       maxLines: 2,
@@ -249,19 +249,19 @@ class DetailScreen extends StatelessWidget {
                             fontFeatures: kTabular)),
                     TextSpan(
                         text: ' ${sub.cycle.perLabel}',
-                        style: const TextStyle(fontSize: 16, color: AppColors.muted)),
+                        style: TextStyle(fontSize: 16, color: AppColors.muted)),
                   ]),
                 ),
               ),
               if (sub.isUsd)
                 Center(
                   child: Text('≈ ${rupiah(sub.amountIdr)} · kurs ${rupiah(Subscription.usdRate)}/US\$',
-                      style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+                      style: TextStyle(color: AppColors.muted, fontSize: 13)),
                 ),
               const SizedBox(height: 12),
               Wrap(alignment: WrapAlignment.center, spacing: 8, runSpacing: 8, children: [
                 if (sub.active) Pill.forSub(sub)
-                else const Pill('Nonaktif', fg: AppColors.faint, bg: AppColors.surface3),
+                else Pill('Nonaktif', fg: AppColors.faint, bg: AppColors.surface3),
                 Pill(sub.category, fg: AppColors.text, bg: AppColors.surface3),
                 if (sub.sharedWith > 1)
                   Pill('Dibagi ${sub.sharedWith} orang',
@@ -300,12 +300,12 @@ class DetailScreen extends StatelessWidget {
                   color: AppColors.limeDeep,
                   borderColor: AppColors.lime.withAlpha(60),
                   child: Row(children: [
-                    const Icon(Icons.savings_rounded, color: AppColors.lime),
+                    Icon(Icons.savings_rounded, color: AppColors.lime),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         'Pindah ke paket tahunan bisa hemat sekitar ${rupiah(saving)} per tahun.',
-                        style: const TextStyle(color: AppColors.lime, fontWeight: FontWeight.w600),
+                        style: TextStyle(color: AppColors.accentText, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ]),
@@ -349,14 +349,14 @@ class DetailScreen extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         child: Row(children: [
-                          const Icon(Icons.check_circle_rounded, color: AppColors.lime, size: 18),
+                          Icon(Icons.check_circle_rounded, color: AppColors.lime, size: 18),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                               Text('Tagihan ${tanggal(sub.payments[i].dueDate)}',
                                   style: const TextStyle(fontWeight: FontWeight.w600)),
                               Text('Ditandai ${tanggal(sub.payments[i].paidAt)}',
-                                  style: const TextStyle(color: AppColors.muted, fontSize: 12.5)),
+                                  style: TextStyle(color: AppColors.muted, fontSize: 12.5)),
                             ]),
                           ),
                           Text(sub.payments[i].label,
@@ -387,7 +387,7 @@ class DetailScreen extends StatelessWidget {
                       child: Row(children: [
                         Expanded(
                             child: Text(tanggal(history[i].date),
-                                style: const TextStyle(color: AppColors.muted))),
+                                style: TextStyle(color: AppColors.muted))),
                         if (i + 1 < history.length &&
                             history[i].amount != history[i + 1].amount) ...[
                           _ChangeBadge(
@@ -421,7 +421,7 @@ class DetailScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 10),
-                const Text(
+                Text(
                   'Membuka halaman pengelolaan langganan resmi layanan ini.',
                   textAlign: TextAlign.center,
                   style: TextStyle(color: AppColors.faint, fontSize: 12.5),
@@ -518,7 +518,7 @@ class _SplitCard extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text('Untuk tagihan ${tanggal(sub.nextDue)}',
-            style: const TextStyle(color: AppColors.muted, fontSize: 12.5)),
+            style: TextStyle(color: AppColors.muted, fontSize: 12.5)),
         const SizedBox(height: 6),
         for (var i = 0; i < members.length; i++) ...[
           const Divider(),
@@ -540,13 +540,13 @@ class _SplitCard extends StatelessWidget {
                 await repo.setMemberPaid(sub, members[i], !sub.memberPaid(members[i]));
               },
               child: sub.memberPaid(members[i])
-                  ? const Pill('Lunas', fg: AppColors.lime, bg: AppColors.limeDeep, icon: Icons.check_rounded)
-                  : const Pill('Belum', fg: AppColors.amber, bg: AppColors.amberDeep),
+                  ? Pill('Lunas', fg: AppColors.accentText, bg: AppColors.limeDeep, icon: Icons.check_rounded)
+                  : Pill('Belum', fg: AppColors.amber, bg: AppColors.amberDeep),
             ),
             IconButton(
               tooltip: 'Tagih via WhatsApp',
               onPressed: () => _remind(context, members[i]),
-              icon: const Icon(Icons.send_rounded, size: 20, color: AppColors.muted),
+              icon: Icon(Icons.send_rounded, size: 20, color: AppColors.muted),
             ),
           ]),
         ],

@@ -83,7 +83,7 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
                     _showActive
                         ? '${list.length} layanan · ${rupiah(sum)}/bln'
                         : '${list.length} layanan dibatalkan · hemat ${rupiah(sum * 12)}/thn',
-                    style: const TextStyle(color: AppColors.muted, fontSize: 13),
+                    style: TextStyle(color: AppColors.muted, fontSize: 13),
                   ),
                 ),
               if (list.isEmpty)
@@ -98,7 +98,7 @@ class _SubscriptionsScreenState extends State<SubscriptionsScreen> {
                           ? 'Belum ada langganan aktif.\nKetuk "Tambah" untuk mulai.'
                           : 'Belum ada langganan yang dibatalkan.',
                       textAlign: TextAlign.center,
-                      style: const TextStyle(color: AppColors.muted),
+                      style: TextStyle(color: AppColors.muted),
                     ),
                   ]),
                 )
